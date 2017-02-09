@@ -52,3 +52,24 @@ impl<'a, F> Parser<&'a str> for Satisfy<F>
         Err((from, Error::Satisfy))
     }
 }
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct TakeWhile<F>(pub F) where F: FnMut(char) -> bool;
+
+impl<'a, F> Parser<&'a str> for TakeWhile<F>
+    where F: FnMut(char) -> bool
+{
+    type Output = &'a str;
+    type Error = Error<'static>;
+
+    fn parse(&mut self, input: &'a str, from: usize) -> Result<Self::Output, Self::Error> {
+        let mut chars = input[from..].chars();
+        match chars.by_ref().skip_while(|&char| self.0(char)).next() {
+            Some(char) => {
+                let to = input.len() - chars.as_str().len() - char.len_utf8();
+                Ok((to, &input[from..to]))
+            }
+            None => Ok((input.len(), &input[from..])),
+        }
+    }
+}

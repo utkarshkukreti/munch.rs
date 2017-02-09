@@ -39,3 +39,16 @@ fn satisfy() {
         },
     }
 }
+
+#[test]
+fn take_while() {
+    t! {
+        TakeWhile(char::is_alphabetic) => {
+            "" => Ok((0, "")),
+            "π" => Ok((2, "π")),
+            "πr" => Ok((3, "πr")),
+            "πr²" => Ok((3, "πr")),
+            "πr²h" => Ok((3, "πr")),
+        },
+    }
+}
