@@ -52,3 +52,16 @@ fn take_while() {
         },
     }
 }
+
+#[test]
+fn take_while1() {
+    t! {
+        TakeWhile1(char::is_alphabetic) => {
+            "" => Err((0, Error::TakeWhile1)),
+            "π" => Ok((2, "π")),
+            "πr" => Ok((3, "πr")),
+            "πr²" => Ok((3, "πr")),
+            "πr²h" => Ok((3, "πr")),
+        },
+    }
+}
