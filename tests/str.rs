@@ -28,3 +28,14 @@ fn str() {
         },
     }
 }
+
+#[test]
+fn satisfy() {
+    t! {
+        Satisfy(char::is_alphabetic) => {
+            "" => Err((0, Error::Satisfy)),
+            "π" => Ok((2, 'π')),
+            "πr" => Ok((2, 'π')),
+        },
+    }
+}
