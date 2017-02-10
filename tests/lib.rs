@@ -45,3 +45,19 @@ fn or() {
         },
     }
 }
+
+#[test]
+fn try() {
+    t! {
+        Try('π'.and('r').and('²')) => {
+            "" => Err((0, Error::Char('π'))),
+            "a" => Err((0, Error::Char('π'))),
+            "π" => Err((0, Error::Char('r'))),
+            "πh" => Err((0, Error::Char('r'))),
+            "πr" => Err((0, Error::Char('²'))),
+            "πrh" => Err((0, Error::Char('²'))),
+            "πr²" => Ok((5, (('π', 'r'), '²'))),
+            "πr²h" => Ok((5, (('π', 'r'), '²'))),
+        },
+    }
+}

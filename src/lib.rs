@@ -72,3 +72,17 @@ impl<A, B, Input> Parser<Input> for Or<A, B>
             .or_else(|_| self.1.parse(input, from))
     }
 }
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct Try<A>(pub A);
+
+impl<A, Input> Parser<Input> for Try<A>
+    where A: Parser<Input>
+{
+    type Output = A::Output;
+    type Error = A::Error;
+
+    fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
+        self.0.parse(input, from).map_err(|(_, error)| (from, error))
+    }
+}
