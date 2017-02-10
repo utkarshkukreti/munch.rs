@@ -169,3 +169,24 @@ fn fn_() {
         },
     }
 }
+
+#[test]
+fn and_then() {
+    #[derive(Debug, PartialEq)]
+    enum Error {
+        Munch(munch::str::Error<'static>),
+        ParseIntError(std::num::ParseIntError),
+    }
+
+    t! {
+        TakeWhile1(|ch| '0' <= ch && ch <= '9')
+            .map_err(Error::Munch)
+            .and_then(|str: &str| str.parse::<u8>().map_err(Error::ParseIntError)) => {
+            "" => Err((0, Error::Munch(munch::str::Error::TakeWhile1))),
+            "0" => Ok((1, 0)),
+            "255" => Ok((3, 255)),
+            "256" => Err((3, Error::ParseIntError("256".parse::<u8>().err().unwrap()))),
+            "1024" => Err((4, Error::ParseIntError("1024".parse::<u8>().err().unwrap()))),
+        },
+    }
+}

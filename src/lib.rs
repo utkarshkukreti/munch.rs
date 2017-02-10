@@ -35,6 +35,13 @@ pub trait Parser<Input> {
     {
         MapErr(self, f)
     }
+
+    fn and_then<F, Output>(self, f: F) -> AndThen<Self, F>
+        where Self: Sized,
+              F: FnMut(Self::Output) -> std::result::Result<Output, Self::Error>
+    {
+        AndThen(self, f)
+    }
 }
 
 impl<F, Input, Output, Error> Parser<Input> for F
@@ -184,4 +191,27 @@ tuple_impl! {
     (A B C D E F G H I J),
     (A B C D E F G H I J K),
     (A B C D E F G H I J K L),
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct AndThen<A, F>(pub A, pub F);
+
+impl<A, F, Input, Output> Parser<Input> for AndThen<A, F>
+    where A: Parser<Input>,
+          F: FnMut(A::Output) -> std::result::Result<Output, A::Error>
+{
+    type Output = Output;
+    type Error = A::Error;
+
+    fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
+        match self.0.parse(input, from) {
+            Ok((from, output)) => {
+                match self.1(output) {
+                    Ok(output) => Ok((from, output)),
+                    Err(error) => Err((from, error)),
+                }
+            }
+            Err((from, error)) => Err((from, error)),
+        }
+    }
 }
