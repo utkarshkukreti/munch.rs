@@ -114,3 +114,39 @@ impl<A, F, Input, Output> Parser<Input> for Map<A, F>
             .map(|(from, output)| (from, self.1(output)))
     }
 }
+
+macro_rules! tuple_impl {
+    ($(($head:ident $($tail:ident)*),)+) => {$(
+        impl<$head $(,$tail)*, Input> Parser<Input> for ($head, $($tail),*)
+            where $head: Parser<Input>
+                  $(, $tail: Parser<Input, Error = $head::Error>)*,
+                  Input: Copy
+        {
+            type Output = ($head::Output, $($tail::Output),*);
+            type Error = $head::Error;
+
+            #[allow(non_snake_case)]
+            fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
+                let (ref mut $head, $(ref mut $tail),*) = *self;
+                let (from, $head) = $head.parse(input, from)?;
+                $(let (from, $tail) = $tail.parse(input, from)?;)*
+                Ok((from, ($head, $($tail),*)))
+            }
+        }
+    )+}
+}
+
+tuple_impl! {
+    (A),
+    (A B),
+    (A B C),
+    (A B C D),
+    (A B C D E),
+    (A B C D E F),
+    (A B C D E F G),
+    (A B C D E F G H),
+    (A B C D E F G H I),
+    (A B C D E F G H I J),
+    (A B C D E F G H I J K),
+    (A B C D E F G H I J K L),
+}
