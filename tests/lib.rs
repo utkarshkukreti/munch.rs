@@ -137,3 +137,20 @@ fn tuple() {
         },
     }
 }
+
+#[test]
+fn fn_() {
+    let mut pi = |input: &str, from: usize| if input[from..].starts_with("pi") {
+        Ok((from + 2, 'π'))
+    } else {
+        Err((from, ()))
+    };
+
+    t! {
+        pi => {
+            "" => Err((0, ())),
+            "pi" => Ok((2, 'π')),
+            "pie" => Ok((2, 'π')),
+        },
+    }
+}

@@ -30,6 +30,17 @@ pub trait Parser<Input> {
     }
 }
 
+impl<F, Input, Output, Error> Parser<Input> for F
+    where F: FnMut(Input, usize) -> Result<Output, Error>
+{
+    type Output = Output;
+    type Error = Error;
+
+    fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
+        self(input, from)
+    }
+}
+
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct P<A>(pub A);
 
