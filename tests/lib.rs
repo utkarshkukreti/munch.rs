@@ -80,3 +80,17 @@ fn try() {
         },
     }
 }
+
+#[test]
+fn map() {
+    t! {
+        "one".or("two").or("three").map(|str| str.len())
+          .or(Satisfy(char::is_alphabetic).map(|ch| ch.len_utf8())) => {
+            "one" => Ok((3, 3)),
+            "two" => Ok((3, 3)),
+            "three" => Ok((5, 5)),
+            "a" => Ok((1, 1)),
+            "π" => Ok((2, 2)),
+        },
+    }
+}
