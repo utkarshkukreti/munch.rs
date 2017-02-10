@@ -7,6 +7,13 @@ pub trait Parser<Input> {
     type Error;
 
     fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error>;
+
+    fn and<B>(self, b: B) -> And<Self, B>
+        where Self: Sized,
+              B: Parser<Input, Error = Self::Error>
+    {
+        And(self, b)
+    }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -20,5 +27,23 @@ impl<A, Input> Parser<Input> for P<A>
 
     fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
         self.0.parse(input, from)
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct And<A, B>(pub A, pub B);
+
+impl<A, B, Input> Parser<Input> for And<A, B>
+    where A: Parser<Input>,
+          B: Parser<Input, Error = A::Error>,
+          Input: Copy
+{
+    type Output = (A::Output, B::Output);
+    type Error = A::Error;
+
+    fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
+        let (from, a) = self.0.parse(input, from)?;
+        let (from, b) = self.1.parse(input, from)?;
+        Ok((from, (a, b)))
     }
 }
