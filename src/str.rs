@@ -91,3 +91,18 @@ impl<'a, F> Parser<&'a str> for TakeWhile1<F>
         }
     }
 }
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct Capture<P>(pub P);
+
+impl<'a, P> Parser<&'a str> for Capture<P>
+    where P: Parser<&'a str>
+{
+    type Output = &'a str;
+    type Error = P::Error;
+
+    fn parse(&mut self, input: &'a str, from: usize) -> Result<Self::Output, Self::Error> {
+        let (to, _) = self.0.parse(input, from)?;
+        Ok((to, &input[from..to]))
+    }
+}

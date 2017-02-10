@@ -65,3 +65,17 @@ fn take_while1() {
         },
     }
 }
+
+#[test]
+fn capture() {
+    t! {
+        Capture((Satisfy(char::is_alphabetic), TakeWhile(char::is_alphanumeric))) => {
+            "1" => Err((0, Error::Satisfy)),
+            "π" => Ok((2, "π")),
+            "πr" => Ok((3, "πr")),
+            "πr²" => Ok((3, "πr")),
+            "πrr" => Ok((4, "πrr")),
+            "πrrh" => Ok((5, "πrrh")),
+        },
+    }
+}
