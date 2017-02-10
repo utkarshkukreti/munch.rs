@@ -206,14 +206,9 @@ impl<A, F, Input, Output> Parser<Input> for AndThen<A, F>
     type Error = A::Error;
 
     fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
-        match self.0.parse(input, from) {
-            Ok((from, output)) => {
-                match self.1(output) {
-                    Ok(output) => Ok((from, output)),
-                    Err(error) => Err((from, error)),
-                }
-            }
-            Err((from, error)) => Err((from, error)),
-        }
+        self.0.parse(input, from).and_then(|(from, output)| match self.1(output) {
+            Ok(output) => Ok((from, output)),
+            Err(error) => Err((from, error)),
+        })
     }
 }
