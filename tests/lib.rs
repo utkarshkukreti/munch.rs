@@ -96,6 +96,21 @@ fn map() {
 }
 
 #[test]
+fn map_err() {
+    #[derive(Debug, PartialEq)]
+    enum Error {
+        Munch(munch::str::Error<'static>),
+    }
+
+    t! {
+        "foo".map_err(Error::Munch) => {
+            "" => Err((0, Error::Munch(munch::str::Error::Str("foo")))),
+            "foo" => Ok((3, "foo")),
+        },
+    }
+}
+
+#[test]
 fn tuple() {
     t! {
         ('a',) => {

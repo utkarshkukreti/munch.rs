@@ -28,6 +28,13 @@ pub trait Parser<Input> {
     {
         Map(self, f)
     }
+
+    fn map_err<F, Error>(self, f: F) -> MapErr<Self, F>
+        where Self: Sized,
+              F: FnMut(Self::Error) -> Error
+    {
+        MapErr(self, f)
+    }
 }
 
 impl<F, Input, Output, Error> Parser<Input> for F
@@ -123,6 +130,23 @@ impl<A, F, Input, Output> Parser<Input> for Map<A, F>
         self.0
             .parse(input, from)
             .map(|(from, output)| (from, self.1(output)))
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct MapErr<A, F>(pub A, pub F);
+
+impl<A, F, Input, Error> Parser<Input> for MapErr<A, F>
+    where A: Parser<Input>,
+          F: FnMut(A::Error) -> Error
+{
+    type Output = A::Output;
+    type Error = Error;
+
+    fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
+        self.0
+            .parse(input, from)
+            .map_err(|(from, error)| (from, self.1(error)))
     }
 }
 
