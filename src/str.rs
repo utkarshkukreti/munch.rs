@@ -6,6 +6,7 @@ pub enum Error<'a> {
     Str(&'a str),
     Satisfy,
     TakeWhile1,
+    Any,
 }
 
 impl<'a> Parser<&'a str> for char {
@@ -104,5 +105,21 @@ impl<'a, P> Parser<&'a str> for Capture<P>
     fn parse(&mut self, input: &'a str, from: usize) -> Result<Self::Output, Self::Error> {
         let (to, _) = self.0.parse(input, from)?;
         Ok((to, &input[from..to]))
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct Any;
+
+impl<'a> Parser<&'a str> for Any {
+    type Output = char;
+    type Error = Error<'static>;
+
+    fn parse(&mut self, input: &'a str, from: usize) -> Result<Self::Output, Self::Error> {
+        if let Some(char) = input[from..].chars().next() {
+            Ok((from + char.len_utf8(), char))
+        } else {
+            Err((from, Error::Any))
+        }
     }
 }
