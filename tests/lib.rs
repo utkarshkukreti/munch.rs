@@ -190,3 +190,28 @@ fn and_then() {
         },
     }
 }
+
+#[test]
+fn optional() {
+    t! {
+        'π'.optional() => {
+            "" => Ok((0, None)),
+            "π" => Ok((2, Some('π'))),
+            "πr" => Ok((2, Some('π'))),
+        },
+        ('π', 'r', "²").optional() => {
+            "" => Ok((0, None)),
+            "π" => Err((2, Error::Char('r'))),
+            "πr" => Err((3, Error::Str("²"))),
+            "πr²" => Ok((5, Some(('π', 'r', "²")))),
+            "πr²h" => Ok((5, Some(('π', 'r', "²")))),
+        },
+        (Try(('π', 'r')), "²").optional() => {
+            "" => Ok((0, None)),
+            "π" => Ok((0, None)),
+            "πr" => Err((3, Error::Str("²"))),
+            "πr²" => Ok((5, Some((('π', 'r'), "²")))),
+            "πr²h" => Ok((5, Some((('π', 'r'), "²")))),
+        },
+    }
+}

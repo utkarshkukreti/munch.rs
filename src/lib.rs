@@ -44,6 +44,12 @@ pub trait Parser<Input> {
     {
         AndThen(self, f)
     }
+
+    fn optional(self) -> Optional<Self>
+        where Self: Sized
+    {
+        Optional(self)
+    }
 }
 
 impl<F, Input, Output, Error> Parser<Input> for F
@@ -210,5 +216,23 @@ impl<A, F, Input, Output> Parser<Input> for AndThen<A, F>
             Ok(output) => Ok((from, output)),
             Err(error) => Err((from, error)),
         })
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct Optional<A>(pub A);
+
+impl<A, Input> Parser<Input> for Optional<A>
+    where A: Parser<Input>
+{
+    type Output = Option<A::Output>;
+    type Error = A::Error;
+
+    fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
+        match self.0.parse(input, from) {
+            Ok((from, output)) => Ok((from, Some(output))),
+            Err((from2, _)) if from == from2 => Ok((from, None)),
+            Err((from, error)) => Err((from, error)),
+        }
     }
 }
