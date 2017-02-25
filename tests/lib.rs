@@ -307,3 +307,33 @@ fn sep_by() {
         },
     }
 }
+
+#[test]
+fn sep_by1() {
+    t! {
+        'π'.sep_by1(('r', '²')) => {
+            "" => Err((0, Error::Char('π'))),
+            "π" => Ok((2, vec!['π'; 1])),
+            "πr" => Err((3, Error::Char('²'))),
+            "πr²" => Err((5, Error::Char('π'))),
+            "πr²π" => Ok((7, vec!['π'; 2])),
+            "πr²πr" => Err((8, Error::Char('²'))),
+            "πr²πr²" => Err((10, Error::Char('π'))),
+            "πr²πr²π" => Ok((12, vec!['π'; 3])),
+            "πr²πr²πr" => Err((13, Error::Char('²'))),
+            "πr²πr²πr²" => Err((15, Error::Char('π'))),
+        },
+        'π'.sep_by1(Try(('r', '²'))) => {
+            "" => Err((0, Error::Char('π'))),
+            "π" => Ok((2, vec!['π'; 1])),
+            "πr" => Ok((2, vec!['π'; 1])),
+            "πr²" => Err((5, Error::Char('π'))),
+            "πr²π" => Ok((7, vec!['π'; 2])),
+            "πr²πr" => Ok((7, vec!['π'; 2])),
+            "πr²πr²" => Err((10, Error::Char('π'))),
+            "πr²πr²π" => Ok((12, vec!['π'; 3])),
+            "πr²πr²πr" => Ok((12, vec!['π'; 3])),
+            "πr²πr²πr²" => Err((15, Error::Char('π'))),
+        },
+    }
+}
