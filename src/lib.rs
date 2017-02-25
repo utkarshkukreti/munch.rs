@@ -56,6 +56,12 @@ pub trait Parser<Input> {
     {
         Many(self)
     }
+
+    fn many1(self) -> Many1<Self>
+        where Self: Sized
+    {
+        Many1(self)
+    }
 }
 
 impl<F, Input, Output, Error> Parser<Input> for F
@@ -255,6 +261,37 @@ impl<A, Input> Parser<Input> for Many<A>
 
     fn parse(&mut self, input: Input, mut from: usize) -> Result<Self::Output, Self::Error> {
         let mut vec = Vec::new();
+        loop {
+            match self.0.parse(input, from) {
+                Ok((from2, output)) => {
+                    from = from2;
+                    vec.push(output);
+                }
+                Err((from2, error)) => {
+                    return if from == from2 {
+                        Ok((from2, vec))
+                    } else {
+                        Err((from2, error))
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct Many1<A>(pub A);
+
+impl<A, Input> Parser<Input> for Many1<A>
+    where A: Parser<Input>,
+          Input: Copy
+{
+    type Output = Vec<A::Output>;
+    type Error = A::Error;
+
+    fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
+        let (mut from, output) = self.0.parse(input, from)?;
+        let mut vec = vec![output];
         loop {
             match self.0.parse(input, from) {
                 Ok((from2, output)) => {
