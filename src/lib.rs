@@ -326,39 +326,17 @@ impl<A, B, Input> Parser<Input> for SepBy<A, B>
     type Output = Vec<A::Output>;
     type Error = A::Error;
 
-    fn parse(&mut self, input: Input, mut from: usize) -> Result<Self::Output, Self::Error> {
-        let mut vec = Vec::new();
+    fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
+        let SepBy(ref mut a, ref mut b) = *self;
 
-        match self.0.parse(input, from) {
-            Ok((from2, output)) => {
-                from = from2;
-                vec.push(output);
-            }
-            Err((from2, error)) => {
-                return if from == from2 {
-                    Ok((from2, vec))
-                } else {
-                    Err((from2, error))
-                }
-            }
-        }
-
-        loop {
-            match self.1.parse(input, from) {
-                Ok((from2, _)) => from = from2,
-                Err((from2, error)) => {
-                    return if from == from2 {
-                        Ok((from2, vec))
-                    } else {
-                        Err((from2, error))
-                    }
-                }
-            }
-
-            let (from2, output) = self.0.parse(input, from)?;
-            from = from2;
-            vec.push(output);
-        }
+        SepBy1(|input, from| a.parse(input, from),
+               |input, from| b.parse(input, from))
+            .parse(input, from)
+            .or_else(|(from2, error)| if from == from2 {
+                Ok((from, Vec::new()))
+            } else {
+                Err((from2, error))
+            })
     }
 }
 
