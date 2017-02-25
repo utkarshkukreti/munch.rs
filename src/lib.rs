@@ -259,23 +259,14 @@ impl<A, Input> Parser<Input> for Many<A>
     type Output = Vec<A::Output>;
     type Error = A::Error;
 
-    fn parse(&mut self, input: Input, mut from: usize) -> Result<Self::Output, Self::Error> {
-        let mut vec = Vec::new();
-        loop {
-            match self.0.parse(input, from) {
-                Ok((from2, output)) => {
-                    from = from2;
-                    vec.push(output);
-                }
-                Err((from2, error)) => {
-                    return if from == from2 {
-                        Ok((from2, vec))
-                    } else {
-                        Err((from2, error))
-                    }
-                }
-            }
-        }
+    fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
+        Many1(|input, from| self.0.parse(input, from))
+            .parse(input, from)
+            .or_else(|(from2, error)| if from == from2 {
+                Ok((from, Vec::new()))
+            } else {
+                Err((from2, error))
+            })
     }
 }
 
