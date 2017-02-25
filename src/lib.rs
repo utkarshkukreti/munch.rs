@@ -373,3 +373,8 @@ impl<A, B, Input> Parser<Input> for SepBy1<A, B>
         }
     }
 }
+
+#[allow(non_snake_case)]
+pub fn Position<Input, Error>(_input: Input, from: usize) -> Result<usize, Error> {
+    Ok((from, from))
+}

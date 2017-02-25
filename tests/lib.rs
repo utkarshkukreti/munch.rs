@@ -337,3 +337,26 @@ fn sep_by1() {
         },
     }
 }
+
+#[test]
+fn position() {
+    let mut p = muncher! {
+        TakeWhile(char::is_whitespace),
+        lo <- Position,
+        word <- TakeWhile1(|ch| !ch.is_whitespace()),
+        hi <- Position,
+        TakeWhile(char::is_whitespace),
+        (Ok((lo, word, hi)))
+    };
+
+    assert_eq!(p.parse("", 0), Err((0, Error::TakeWhile1)));
+    assert_eq!(p.parse("  ", 0), Err((2, Error::TakeWhile1)));
+    assert_eq!(p.parse("π", 0), Ok((2, (0, "π", 2))));
+    assert_eq!(p.parse("πr²", 0), Ok((5, (0, "πr²", 5))));
+    assert_eq!(p.parse("  π", 0), Ok((4, (2, "π", 4))));
+    assert_eq!(p.parse("  πr²", 0), Ok((7, (2, "πr²", 7))));
+    assert_eq!(p.parse("  π  ", 0), Ok((6, (2, "π", 4))));
+    assert_eq!(p.parse("  πr²  ", 0), Ok((9, (2, "πr²", 7))));
+    assert_eq!(p.parse("  π  h", 0), Ok((6, (2, "π", 4))));
+    assert_eq!(p.parse("  πr²  h", 0), Ok((9, (2, "πr²", 7))));
+}
