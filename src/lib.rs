@@ -62,6 +62,13 @@ pub trait Parser<Input> {
     {
         Many1(self)
     }
+
+    fn sep_by<B>(self, b: B) -> SepBy<Self, B>
+        where Self: Sized,
+              B: Parser<Input, Error = Self::Error>
+    {
+        SepBy(self, b)
+    }
 }
 
 impl<F, Input, Output, Error> Parser<Input> for F
@@ -297,6 +304,53 @@ impl<A, Input> Parser<Input> for Many1<A>
                     }
                 }
             }
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct SepBy<A, B>(pub A, pub B);
+
+impl<A, B, Input> Parser<Input> for SepBy<A, B>
+    where A: Parser<Input>,
+          B: Parser<Input, Error = A::Error>,
+          Input: Copy
+{
+    type Output = Vec<A::Output>;
+    type Error = A::Error;
+
+    fn parse(&mut self, input: Input, mut from: usize) -> Result<Self::Output, Self::Error> {
+        let mut vec = Vec::new();
+
+        match self.0.parse(input, from) {
+            Ok((from2, output)) => {
+                from = from2;
+                vec.push(output);
+            }
+            Err((from2, error)) => {
+                return if from == from2 {
+                    Ok((from2, vec))
+                } else {
+                    Err((from2, error))
+                }
+            }
+        }
+
+        loop {
+            match self.1.parse(input, from) {
+                Ok((from2, _)) => from = from2,
+                Err((from2, error)) => {
+                    return if from == from2 {
+                        Ok((from2, vec))
+                    } else {
+                        Err((from2, error))
+                    }
+                }
+            }
+
+            let (from2, output) = self.0.parse(input, from)?;
+            from = from2;
+            vec.push(output);
         }
     }
 }
