@@ -50,6 +50,12 @@ pub trait Parser<Input> {
     {
         Optional(self)
     }
+
+    fn many(self) -> Many<Self>
+        where Self: Sized
+    {
+        Many(self)
+    }
 }
 
 impl<F, Input, Output, Error> Parser<Input> for F
@@ -233,6 +239,36 @@ impl<A, Input> Parser<Input> for Optional<A>
             Ok((from, output)) => Ok((from, Some(output))),
             Err((from2, _)) if from == from2 => Ok((from, None)),
             Err((from, error)) => Err((from, error)),
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct Many<A>(pub A);
+
+impl<A, Input> Parser<Input> for Many<A>
+    where A: Parser<Input>,
+          Input: Copy
+{
+    type Output = Vec<A::Output>;
+    type Error = A::Error;
+
+    fn parse(&mut self, input: Input, mut from: usize) -> Result<Self::Output, Self::Error> {
+        let mut vec = Vec::new();
+        loop {
+            match self.0.parse(input, from) {
+                Ok((from2, output)) => {
+                    from = from2;
+                    vec.push(output);
+                }
+                Err((from2, error)) => {
+                    return if from == from2 {
+                        Ok((from2, vec))
+                    } else {
+                        Err((from2, error))
+                    }
+                }
+            }
         }
     }
 }
