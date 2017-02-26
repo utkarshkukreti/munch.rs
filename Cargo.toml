@@ -3,4 +3,14 @@ name = "munch"
 version = "0.1.0"
 authors = ["Utkarsh Kukreti <utkarshkukreti@gmail.com>"]
 
+description = "Parser combinators with an elegant, Parsec/Attoparsec inspired API."
+
+documentation = "https://docs.rs/munch"
+homepage = "https://github.com/utkarshkukreti/munch.rs"
+repository = "https://github.com/utkarshkukreti/munch.rs"
+
+categories = ["parsing"]
+
+license = "MIT/Apache-2.0"
+
 [dependencies]
