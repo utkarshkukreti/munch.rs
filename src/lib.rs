@@ -103,6 +103,14 @@ impl<A, Input> Parser<Input> for P<A>
     }
 }
 
+impl<A, B> std::ops::BitOr<B> for P<A> {
+    type Output = P<Or<A, B>>;
+
+    fn bitor(self, b: B) -> Self::Output {
+        P(Or(self.0, b))
+    }
+}
+
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct And<A, B>(pub A, pub B);
 
