@@ -90,3 +90,19 @@ fn any() {
         },
     }
 }
+
+#[test]
+fn end() {
+    t! {
+        End => {
+            "" => Ok((0, ())),
+            "π" => Err((0, Error::End)),
+            "πr" => Err((0, Error::End)),
+        },
+        ('π', End) => {
+            "" => Err((0, Error::Char('π'))),
+            "π" => Ok((2, ('π', ()))),
+            "πr" => Err((2, Error::End)),
+        },
+    }
+}
