@@ -53,4 +53,19 @@ fn mac() {
             "1.1.0.1" => Err((7, Error::AllEqual(1))),
         },
     }
+
+    let mut count = muncher! {
+        let mut n = 0,
+        Any.map(|_| n += 1).many1(),
+        (Ok(n))
+    };
+
+    t! {
+        count => {
+            "" => Err((0, munch::str::Error::Any)),
+            "π" => Ok((2, 1)),
+            "πr" => Ok((3, 2)),
+            "πr²" => Ok((5, 3)),
+        },
+    }
 }

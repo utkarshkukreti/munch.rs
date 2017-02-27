@@ -1,7 +1,7 @@
 #[macro_export]
 macro_rules! muncher {
-    (@internal $input:ident $from:ident let $ident:ident = $expr:expr, $($tt:tt)+) => {{
-        let $ident = $expr;
+    (@internal $input:ident $from:ident let $pat:pat = $expr:expr, $($tt:tt)+) => {{
+        let $pat = $expr;
         muncher!(@internal $input $from $($tt)+)
     }};
     (@internal $input:ident $from:ident ($expr:expr)) => {
