@@ -58,18 +58,18 @@ pub trait Parser<Input> {
         Repeat(self, range)
     }
 
-    fn sep_by<B>(self, b: B) -> SepBy<Self, B>
+    fn sep_by<B>(self, b: B) -> Join<Self, B, std::ops::RangeFull>
         where Self: Sized,
               B: Parser<Input, Error = Self::Error>
     {
-        SepBy(self, b)
+        self.repeat(..).join(b)
     }
 
-    fn sep_by1<B>(self, b: B) -> SepBy1<Self, B>
+    fn sep_by1<B>(self, b: B) -> Join<Self, B, std::ops::RangeFrom<usize>>
         where Self: Sized,
               B: Parser<Input, Error = Self::Error>
     {
-        SepBy1(self, b)
+        self.repeat(1..).join(b)
     }
 }
 
@@ -411,65 +411,6 @@ impl<A, B, R, Input> Parser<Input> for Join<A, B, R>
                 Ok((from2, _)) => from = from2,
                 Err((from2, error)) => {
                     return if from == from2 && vec.len() >= min {
-                        Ok((from2, vec))
-                    } else {
-                        Err((from2, error))
-                    }
-                }
-            }
-
-            let (from2, output) = self.0.parse(input, from)?;
-            from = from2;
-            vec.push(output);
-        }
-    }
-}
-
-#[derive(Copy, Clone, Debug, PartialEq)]
-pub struct SepBy<A, B>(pub A, pub B);
-
-impl<A, B, Input> Parser<Input> for SepBy<A, B>
-    where A: Parser<Input>,
-          B: Parser<Input, Error = A::Error>,
-          Input: Copy
-{
-    type Output = Vec<A::Output>;
-    type Error = A::Error;
-
-    fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
-        let SepBy(ref mut a, ref mut b) = *self;
-
-        SepBy1(|input, from| a.parse(input, from),
-               |input, from| b.parse(input, from))
-            .parse(input, from)
-            .or_else(|(from2, error)| if from == from2 {
-                Ok((from, Vec::new()))
-            } else {
-                Err((from2, error))
-            })
-    }
-}
-
-#[derive(Copy, Clone, Debug, PartialEq)]
-pub struct SepBy1<A, B>(pub A, pub B);
-
-impl<A, B, Input> Parser<Input> for SepBy1<A, B>
-    where A: Parser<Input>,
-          B: Parser<Input, Error = A::Error>,
-          Input: Copy
-{
-    type Output = Vec<A::Output>;
-    type Error = A::Error;
-
-    fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
-        let (mut from, output) = self.0.parse(input, from)?;
-        let mut vec = vec![output];
-
-        loop {
-            match self.1.parse(input, from) {
-                Ok((from2, _)) => from = from2,
-                Err((from2, error)) => {
-                    return if from == from2 {
                         Ok((from2, vec))
                     } else {
                         Err((from2, error))
