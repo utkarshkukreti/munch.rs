@@ -324,6 +324,17 @@ impl Range for std::ops::Range<usize> {
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Repeat<A, R: Range>(pub A, pub R);
 
+impl<A, R> Repeat<A, R>
+    where R: Range
+{
+    pub fn join<B, Input>(self, b: B) -> Join<A, B, R>
+        where A: Parser<Input>,
+              B: Parser<Input, Error = A::Error>
+    {
+        Join(self.0, b, self.1)
+    }
+}
+
 impl<A, R, Input> Parser<Input> for Repeat<A, R>
     where A: Parser<Input>,
           R: Range,
@@ -353,6 +364,63 @@ impl<A, R, Input> Parser<Input> for Repeat<A, R>
                     }
                 }
             }
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct Join<A, B, R: Range>(pub A, pub B, pub R);
+
+impl<A, B, R, Input> Parser<Input> for Join<A, B, R>
+    where A: Parser<Input>,
+          B: Parser<Input, Error = A::Error>,
+          R: Range,
+          Input: Copy
+{
+    type Output = Vec<A::Output>;
+    type Error = A::Error;
+
+    fn parse(&mut self, input: Input, mut from: usize) -> Result<Self::Output, Self::Error> {
+        let (min, max) = (self.2.min(), self.2.max());
+        let mut vec = vec![];
+
+        if max == Some(0) {
+            return Ok((from, vec));
+        }
+
+        match self.0.parse(input, from) {
+            Ok((from2, output)) => {
+                from = from2;
+                vec.push(output);
+            }
+            Err((from2, error)) => {
+                return if min == 0 {
+                    Ok((from2, vec))
+                } else {
+                    Err((from2, error))
+                }
+            }
+        }
+
+        loop {
+            if Some(vec.len()) == max {
+                return Ok((from, vec));
+            }
+
+            match self.1.parse(input, from) {
+                Ok((from2, _)) => from = from2,
+                Err((from2, error)) => {
+                    return if from == from2 && vec.len() >= min {
+                        Ok((from2, vec))
+                    } else {
+                        Err((from2, error))
+                    }
+                }
+            }
+
+            let (from2, output) = self.0.parse(input, from)?;
+            from = from2;
+            vec.push(output);
         }
     }
 }

@@ -284,6 +284,78 @@ fn repeat() {
 }
 
 #[test]
+fn join() {
+    fn t<R: Range + Clone>(range: R) {
+        use std::cmp::Ordering::*;
+        let (min, max) = (range.min(), range.max());
+        let mut p1 = 'π'.repeat(range.clone()).join(('r', '²'));
+        let mut p2 = 'π'.repeat(range.clone()).join(Try(('r', '²')));
+        for i in 0..36 {
+            let string = "πr²".chars().cycle().take(i).collect::<String>();
+            let r1 = p1.parse(&string, 0);
+            let r2 = p2.parse(&string, 0);
+            let complete = (i + 2) / 3;
+            let cmp = match max {
+                _ if complete < min => Less,
+                Some(max) if complete >= max => Greater,
+                _ => Equal,
+            };
+
+            if i == 0 || (min, max) == (0, Some(0)) {
+                match cmp {
+                    Less => {
+                        assert_eq!(r1, Err((0, Error::Char('π'))));
+                        assert_eq!(r2, Err((0, Error::Char('π'))));
+                    }
+                    Equal | Greater => {
+                        assert_eq!(r1, Ok((0, vec![])));
+                        assert_eq!(r2, Ok((0, vec![])));
+                    }
+                }
+            } else {
+                match ((i - 1) % 3, cmp) {
+                    (0, Less) => {
+                        assert_eq!(r1, Err((complete * 5 - 3, Error::Char('r'))));
+                        assert_eq!(r2, Err((complete * 5 - 3, Error::Char('r'))));
+                    }
+                    (1, Less) => {
+                        assert_eq!(r1, Err((complete * 5 - 2, Error::Char('²'))));
+                        assert_eq!(r2, Err((complete * 5 - 3, Error::Char('²'))));
+                    }
+                    (1, Equal) => {
+                        assert_eq!(r1, Err((complete * 5 - 2, Error::Char('²'))));
+                        assert_eq!(r2, Ok((complete * 5 - 3, vec!['π'; complete])));
+                    }
+                    (2, Less) | (2, Equal) => {
+                        assert_eq!(r1, Err((complete * 5, Error::Char('π'))));
+                        assert_eq!(r2, Err((complete * 5, Error::Char('π'))));
+                    }
+                    (0, Equal) | (_, Greater) => {
+                        let done = match max {
+                            Some(max) => std::cmp::min(complete, max),
+                            None => complete,
+                        };
+                        assert_eq!(r1, Ok((done * 5 - 3, vec!['π'; done])));
+                        assert_eq!(r2, Ok((done * 5 - 3, vec!['π'; done])));
+                    }
+                    _ => unreachable!(),
+                }
+            }
+        }
+    }
+
+    t(..);
+    for i in 0..10 {
+        t(i);
+        t(..i);
+        t(i..);
+        for j in i..10 {
+            t(i..j);
+        }
+    }
+}
+
+#[test]
 fn sep_by() {
     t! {
         'π'.sep_by(('r', '²')) => {
