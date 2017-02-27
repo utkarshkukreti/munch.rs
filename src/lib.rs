@@ -276,6 +276,56 @@ pub trait Range {
     fn max(&self) -> Option<usize>;
 }
 
+impl Range for usize {
+    fn min(&self) -> usize {
+        *self
+    }
+
+    fn max(&self) -> Option<usize> {
+        Some(*self)
+    }
+}
+
+impl Range for std::ops::RangeFull {
+    fn min(&self) -> usize {
+        0
+    }
+
+    fn max(&self) -> Option<usize> {
+        None
+    }
+}
+
+impl Range for std::ops::RangeTo<usize> {
+    fn min(&self) -> usize {
+        0
+    }
+
+    fn max(&self) -> Option<usize> {
+        Some(self.end)
+    }
+}
+
+impl Range for std::ops::RangeFrom<usize> {
+    fn min(&self) -> usize {
+        self.start
+    }
+
+    fn max(&self) -> Option<usize> {
+        None
+    }
+}
+
+impl Range for std::ops::Range<usize> {
+    fn min(&self) -> usize {
+        self.start
+    }
+
+    fn max(&self) -> Option<usize> {
+        Some(self.end)
+    }
+}
+
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Many<A>(pub A);
 
