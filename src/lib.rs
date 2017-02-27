@@ -58,18 +58,6 @@ pub trait Parser<Input> {
         Repeat(self, range)
     }
 
-    fn many(self) -> Repeat<Self, std::ops::RangeFull>
-        where Self: Sized
-    {
-        Repeat(self, ..)
-    }
-
-    fn many1(self) -> Repeat<Self, std::ops::RangeFrom<usize>>
-        where Self: Sized
-    {
-        Repeat(self, 1..)
-    }
-
     fn sep_by<B>(self, b: B) -> SepBy<Self, B>
         where Self: Sized,
               B: Parser<Input, Error = Self::Error>

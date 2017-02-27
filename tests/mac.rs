@@ -56,7 +56,7 @@ fn mac() {
 
     let mut count = muncher! {
         let mut n = 0,
-        Any.map(|_| n += 1).many1(),
+        Any.map(|_| n += 1).repeat(1..),
         (Ok(n))
     };
 

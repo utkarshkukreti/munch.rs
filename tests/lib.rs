@@ -226,68 +226,6 @@ fn optional() {
 }
 
 #[test]
-fn many() {
-    let tuple = ('π', 'r', '²');
-    t! {
-        tuple.many() => {
-            "" => Ok((0, vec![tuple; 0])),
-            "π" => Err((2, Error::Char('r'))),
-            "πr" => Err((3, Error::Char('²'))),
-            "πr²" => Ok((5, vec![tuple; 1])),
-            "πr²π" => Err((7, Error::Char('r'))),
-            "πr²πr" => Err((8, Error::Char('²'))),
-            "πr²πr²" => Ok((10, vec![tuple; 2])),
-            "πr²πr²π" => Err((12, Error::Char('r'))),
-            "πr²πr²πr" => Err((13, Error::Char('²'))),
-            "πr²πr²πr²" => Ok((15, vec![tuple; 3])),
-        },
-        (Try(('π', 'r')), '²').map(|((a, b), c)| (a, b, c)).many() => {
-            "" => Ok((0, vec![tuple; 0])),
-            "π" => Ok((0, vec![tuple; 0])),
-            "πr" => Err((3, Error::Char('²'))),
-            "πr²" => Ok((5, vec![tuple; 1])),
-            "πr²π" => Ok((5, vec![tuple; 1])),
-            "πr²πr" => Err((8, Error::Char('²'))),
-            "πr²πr²" => Ok((10, vec![tuple; 2])),
-            "πr²πr²π" => Ok((10, vec![tuple; 2])),
-            "πr²πr²πr" => Err((13, Error::Char('²'))),
-            "πr²πr²πr²" => Ok((15, vec![tuple; 3])),
-        },
-    }
-}
-
-#[test]
-fn many1() {
-    let tuple = ('π', 'r', '²');
-    t! {
-        tuple.many1() => {
-            "" => Err((0, Error::Char('π'))),
-            "π" => Err((2, Error::Char('r'))),
-            "πr" => Err((3, Error::Char('²'))),
-            "πr²" => Ok((5, vec![tuple; 1])),
-            "πr²π" => Err((7, Error::Char('r'))),
-            "πr²πr" => Err((8, Error::Char('²'))),
-            "πr²πr²" => Ok((10, vec![tuple; 2])),
-            "πr²πr²π" => Err((12, Error::Char('r'))),
-            "πr²πr²πr" => Err((13, Error::Char('²'))),
-            "πr²πr²πr²" => Ok((15, vec![tuple; 3])),
-        },
-        (Try(('π', 'r')), '²').map(|((a, b), c)| (a, b, c)).many1() => {
-            "" => Err((0, Error::Char('π'))),
-            "π" => Err((0, Error::Char('r'))),
-            "πr" => Err((3, Error::Char('²'))),
-            "πr²" => Ok((5, vec![tuple; 1])),
-            "πr²π" => Ok((5, vec![tuple; 1])),
-            "πr²πr" => Err((8, Error::Char('²'))),
-            "πr²πr²" => Ok((10, vec![tuple; 2])),
-            "πr²πr²π" => Ok((10, vec![tuple; 2])),
-            "πr²πr²πr" => Err((13, Error::Char('²'))),
-            "πr²πr²πr²" => Ok((15, vec![tuple; 3])),
-        },
-    }
-}
-
-#[test]
 fn repeat() {
     fn t<R: Range + Clone>(range: R) {
         use std::cmp::Ordering::*;
