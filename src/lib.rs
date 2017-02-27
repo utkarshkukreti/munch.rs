@@ -58,16 +58,16 @@ pub trait Parser<Input> {
         Repeat(self, range)
     }
 
-    fn many(self) -> Many<Self>
+    fn many(self) -> Repeat<Self, std::ops::RangeFull>
         where Self: Sized
     {
-        Many(self)
+        Repeat(self, ..)
     }
 
-    fn many1(self) -> Many1<Self>
+    fn many1(self) -> Repeat<Self, std::ops::RangeFrom<usize>>
         where Self: Sized
     {
-        Many1(self)
+        Repeat(self, 1..)
     }
 
     fn sep_by<B>(self, b: B) -> SepBy<Self, B>
@@ -359,58 +359,6 @@ impl<A, R, Input> Parser<Input> for Repeat<A, R>
                 }
                 Err((from2, error)) => {
                     return if from == from2 && vec.len() >= min {
-                        Ok((from2, vec))
-                    } else {
-                        Err((from2, error))
-                    }
-                }
-            }
-        }
-    }
-}
-
-#[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Many<A>(pub A);
-
-impl<A, Input> Parser<Input> for Many<A>
-    where A: Parser<Input>,
-          Input: Copy
-{
-    type Output = Vec<A::Output>;
-    type Error = A::Error;
-
-    fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
-        Many1(|input, from| self.0.parse(input, from))
-            .parse(input, from)
-            .or_else(|(from2, error)| if from == from2 {
-                Ok((from, Vec::new()))
-            } else {
-                Err((from2, error))
-            })
-    }
-}
-
-#[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Many1<A>(pub A);
-
-impl<A, Input> Parser<Input> for Many1<A>
-    where A: Parser<Input>,
-          Input: Copy
-{
-    type Output = Vec<A::Output>;
-    type Error = A::Error;
-
-    fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
-        let (mut from, output) = self.0.parse(input, from)?;
-        let mut vec = vec![output];
-        loop {
-            match self.0.parse(input, from) {
-                Ok((from2, output)) => {
-                    from = from2;
-                    vec.push(output);
-                }
-                Err((from2, error)) => {
-                    return if from == from2 {
                         Ok((from2, vec))
                     } else {
                         Err((from2, error))
