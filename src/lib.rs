@@ -271,6 +271,11 @@ impl<A, Input> Parser<Input> for Optional<A>
     }
 }
 
+pub trait Range {
+    fn min(&self) -> usize;
+    fn max(&self) -> Option<usize>;
+}
+
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Many<A>(pub A);
 
