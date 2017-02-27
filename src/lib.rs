@@ -51,6 +51,13 @@ pub trait Parser<Input> {
         Optional(self)
     }
 
+    fn repeat<R>(self, range: R) -> Repeat<Self, R>
+        where Self: Sized,
+              R: Range
+    {
+        Repeat(self, range)
+    }
+
     fn many(self) -> Many<Self>
         where Self: Sized
     {
@@ -323,6 +330,42 @@ impl Range for std::ops::Range<usize> {
 
     fn max(&self) -> Option<usize> {
         Some(self.end)
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct Repeat<A, R: Range>(pub A, pub R);
+
+impl<A, R, Input> Parser<Input> for Repeat<A, R>
+    where A: Parser<Input>,
+          R: Range,
+          Input: Copy
+{
+    type Output = Vec<A::Output>;
+    type Error = A::Error;
+
+    fn parse(&mut self, input: Input, mut from: usize) -> Result<Self::Output, Self::Error> {
+        let (min, max) = (self.1.min(), self.1.max());
+        let mut vec = vec![];
+        loop {
+            if Some(vec.len()) == max {
+                return Ok((from, vec));
+            }
+
+            match self.0.parse(input, from) {
+                Ok((from2, output)) => {
+                    from = from2;
+                    vec.push(output);
+                }
+                Err((from2, error)) => {
+                    return if from == from2 && vec.len() >= min {
+                        Ok((from2, vec))
+                    } else {
+                        Err((from2, error))
+                    }
+                }
+            }
+        }
     }
 }
 

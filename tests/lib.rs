@@ -288,6 +288,64 @@ fn many1() {
 }
 
 #[test]
+fn repeat() {
+    fn t<R: Range + Clone>(range: R) {
+        use std::cmp::Ordering::*;
+        let (min, max) = (range.min(), range.max());
+        let mut p1 = ('π', 'r', '²').repeat(range.clone());
+        let mut p2 = (Try(('π', 'r')), '²').map(|((a, b), c)| (a, b, c)).repeat(range.clone());
+        for i in 0..36 {
+            let string = "πr²".chars().cycle().take(i).collect::<String>();
+            let r1 = p1.parse(&string, 0);
+            let r2 = p2.parse(&string, 0);
+            let complete = i / 3;
+            let cmp = match max {
+                _ if complete < min => Less,
+                Some(max) if complete >= max => Greater,
+                _ => Equal,
+            };
+            match (i % 3, cmp) {
+                (0, Less) => {
+                    assert_eq!(r1, Err((complete * 5 + 0, Error::Char('π'))));
+                    assert_eq!(r2, Err((complete * 5 + 0, Error::Char('π'))));
+                }
+                (1, Less) => {
+                    assert_eq!(r1, Err((complete * 5 + 2, Error::Char('r'))));
+                    assert_eq!(r2, Err((complete * 5, Error::Char('r'))));
+                }
+                (1, Equal) => {
+                    assert_eq!(r1, Err((complete * 5 + 2, Error::Char('r'))));
+                    assert_eq!(r2, Ok((complete * 5, vec![('π', 'r', '²'); complete])));
+                }
+                (2, Less) | (2, Equal) => {
+                    assert_eq!(r1, Err((complete * 5 + 3, Error::Char('²'))));
+                    assert_eq!(r2, Err((complete * 5 + 3, Error::Char('²'))));
+                }
+                (0, Equal) | (_, Greater) => {
+                    let done = match max {
+                        Some(max) => std::cmp::min(complete, max),
+                        None => complete,
+                    };
+                    assert_eq!(r1, Ok((done * 5, vec![('π', 'r', '²'); done])));
+                    assert_eq!(r2, Ok((done * 5, vec![('π', 'r', '²'); done])));
+                }
+                _ => unreachable!(),
+            }
+        }
+    }
+
+    t(..);
+    for i in 0..10 {
+        t(i);
+        t(..i);
+        t(i..);
+        for j in i..10 {
+            t(i..j);
+        }
+    }
+}
+
+#[test]
 fn sep_by() {
     t! {
         'π'.sep_by(('r', '²')) => {
