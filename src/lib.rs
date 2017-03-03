@@ -106,6 +106,22 @@ impl<A, B> std::ops::BitOr<B> for P<A> {
     }
 }
 
+impl<A, B> std::ops::Shl<B> for P<A> {
+    type Output = P<AndSkip<A, B>>;
+
+    fn shl(self, b: B) -> Self::Output {
+        P(AndSkip(self.0, b))
+    }
+}
+
+impl<A, B> std::ops::Shr<B> for P<A> {
+    type Output = P<SkipAnd<A, B>>;
+
+    fn shr(self, b: B) -> Self::Output {
+        P(SkipAnd(self.0, b))
+    }
+}
+
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct And<A, B>(pub A, pub B);
 
