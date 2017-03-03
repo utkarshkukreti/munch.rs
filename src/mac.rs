@@ -18,5 +18,7 @@ macro_rules! muncher {
         let ($from, _) = $crate::Parser::parse(&mut $parser, $input, $from)?;
         muncher!(@internal $input $from $($tt)+)
     }};
-    ($($tt:tt)+) => { |input, from| muncher!(@internal input from $($tt)+) }
+    ($($tt:tt)+) => {
+        $crate::P(|input, from| muncher!(@internal input from $($tt)+))
+    }
 }

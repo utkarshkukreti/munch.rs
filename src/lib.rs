@@ -10,66 +10,66 @@ pub trait Parser<Input> {
 
     fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error>;
 
-    fn and<B>(self, b: B) -> And<Self, B>
+    fn and<B>(self, b: B) -> P<And<Self, B>>
         where Self: Sized,
               B: Parser<Input, Error = Self::Error>
     {
-        And(self, b)
+        P(And(self, b))
     }
 
-    fn and_skip<B>(self, b: B) -> AndSkip<Self, B>
+    fn and_skip<B>(self, b: B) -> P<AndSkip<Self, B>>
         where Self: Sized,
               B: Parser<Input, Error = Self::Error>
     {
-        AndSkip(self, b)
+        P(AndSkip(self, b))
     }
 
-    fn skip_and<B>(self, b: B) -> SkipAnd<Self, B>
+    fn skip_and<B>(self, b: B) -> P<SkipAnd<Self, B>>
         where Self: Sized,
               B: Parser<Input, Error = Self::Error>
     {
-        SkipAnd(self, b)
+        P(SkipAnd(self, b))
     }
 
-    fn or<B>(self, b: B) -> Or<Self, B>
+    fn or<B>(self, b: B) -> P<Or<Self, B>>
         where Self: Sized,
               B: Parser<Input, Output = Self::Output, Error = Self::Error>
     {
-        Or(self, b)
+        P(Or(self, b))
     }
 
-    fn map<F, Output>(self, f: F) -> Map<Self, F>
+    fn map<F, Output>(self, f: F) -> P<Map<Self, F>>
         where Self: Sized,
               F: FnMut(Self::Output) -> Output
     {
-        Map(self, f)
+        P(Map(self, f))
     }
 
-    fn map_err<F, Error>(self, f: F) -> MapErr<Self, F>
+    fn map_err<F, Error>(self, f: F) -> P<MapErr<Self, F>>
         where Self: Sized,
               F: FnMut(Self::Error) -> Error
     {
-        MapErr(self, f)
+        P(MapErr(self, f))
     }
 
-    fn and_then<F, Output>(self, f: F) -> AndThen<Self, F>
+    fn and_then<F, Output>(self, f: F) -> P<AndThen<Self, F>>
         where Self: Sized,
               F: FnMut(Self::Output) -> std::result::Result<Output, Self::Error>
     {
-        AndThen(self, f)
+        P(AndThen(self, f))
     }
 
-    fn optional(self) -> Optional<Self>
+    fn optional(self) -> P<Optional<Self>>
         where Self: Sized
     {
-        Optional(self)
+        P(Optional(self))
     }
 
-    fn repeat<R>(self, range: R) -> Repeat<Self, R>
+    fn repeat<R>(self, range: R) -> P<Repeat<Self, R>>
         where Self: Sized,
               R: Range
     {
-        Repeat(self, range)
+        P(Repeat(self, range))
     }
 }
 
@@ -375,14 +375,14 @@ impl Range for std::ops::Range<usize> {
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Repeat<A, R: Range>(pub A, pub R);
 
-impl<A, R> Repeat<A, R>
+impl<A, R> P<Repeat<A, R>>
     where R: Range
 {
-    pub fn join<B, Input>(self, b: B) -> Join<A, B, R>
+    pub fn join<B, Input>(self, b: B) -> P<Join<A, B, R>>
         where A: Parser<Input>,
               B: Parser<Input, Error = A::Error>
     {
-        Join(self.0, b, self.1)
+        P(Join((self.0).0, b, (self.0).1))
     }
 }
 
