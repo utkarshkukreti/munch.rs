@@ -17,6 +17,13 @@ pub trait Parser<Input> {
         And(self, b)
     }
 
+    fn and_skip<B>(self, b: B) -> AndSkip<Self, B>
+        where Self: Sized,
+              B: Parser<Input, Error = Self::Error>
+    {
+        AndSkip(self, b)
+    }
+
     fn or<B>(self, b: B) -> Or<Self, B>
         where Self: Sized,
               B: Parser<Input, Output = Self::Output, Error = Self::Error>
@@ -107,6 +114,24 @@ impl<A, B, Input> Parser<Input> for And<A, B>
         let (from, a) = self.0.parse(input, from)?;
         let (from, b) = self.1.parse(input, from)?;
         Ok((from, (a, b)))
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct AndSkip<A, B>(pub A, pub B);
+
+impl<A, B, Input> Parser<Input> for AndSkip<A, B>
+    where A: Parser<Input>,
+          B: Parser<Input, Error = A::Error>,
+          Input: Copy
+{
+    type Output = A::Output;
+    type Error = A::Error;
+
+    fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
+        let (from, a) = self.0.parse(input, from)?;
+        let (from, _) = self.1.parse(input, from)?;
+        Ok((from, a))
     }
 }
 

@@ -43,6 +43,22 @@ fn and() {
 }
 
 #[test]
+fn and_skip() {
+    t! {
+        'π'.and_skip("r").and('²') => {
+            "" => Err((0, Error::Char('π'))),
+            "a" => Err((0, Error::Char('π'))),
+            "π" => Err((2, Error::Str("r"))),
+            "πh" => Err((2, Error::Str("r"))),
+            "πr" => Err((3, Error::Char('²'))),
+            "πrh" => Err((3, Error::Char('²'))),
+            "πr²" => Ok((5, ('π', '²'))),
+            "πr²h" => Ok((5, ('π', '²'))),
+        },
+    }
+}
+
+#[test]
 fn or() {
     t! {
         'π'.or('r').or('²') => {
