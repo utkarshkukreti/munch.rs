@@ -205,13 +205,16 @@ impl<A, B, Input> Parser<Input> for Or<A, B>
 
     #[inline(always)]
     fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
-        self.0
-            .parse(input, from)
-            .or_else(|(from2, error)| if from == from2 {
-                self.1.parse(input, from)
-            } else {
-                Err((from2, error))
-            })
+        match self.0.parse(input, from) {
+            Ok((from, output)) => Ok((from, output)),
+            Err((from2, error)) => {
+                if from == from2 {
+                    self.1.parse(input, from)
+                } else {
+                    Err((from2, error))
+                }
+            }
+        }
     }
 }
 
