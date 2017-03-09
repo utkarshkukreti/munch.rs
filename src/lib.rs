@@ -10,6 +10,7 @@ pub trait Parser<Input> {
 
     fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error>;
 
+    #[inline(always)]
     fn and<B>(self, b: B) -> P<And<Self, B>>
         where Self: Sized,
               B: Parser<Input, Error = Self::Error>
@@ -17,6 +18,7 @@ pub trait Parser<Input> {
         P(And(self, b))
     }
 
+    #[inline(always)]
     fn and_skip<B>(self, b: B) -> P<AndSkip<Self, B>>
         where Self: Sized,
               B: Parser<Input, Error = Self::Error>
@@ -24,6 +26,7 @@ pub trait Parser<Input> {
         P(AndSkip(self, b))
     }
 
+    #[inline(always)]
     fn skip_and<B>(self, b: B) -> P<SkipAnd<Self, B>>
         where Self: Sized,
               B: Parser<Input, Error = Self::Error>
@@ -31,6 +34,7 @@ pub trait Parser<Input> {
         P(SkipAnd(self, b))
     }
 
+    #[inline(always)]
     fn or<B>(self, b: B) -> P<Or<Self, B>>
         where Self: Sized,
               B: Parser<Input, Output = Self::Output, Error = Self::Error>
@@ -38,6 +42,7 @@ pub trait Parser<Input> {
         P(Or(self, b))
     }
 
+    #[inline(always)]
     fn map<F, Output>(self, f: F) -> P<Map<Self, F>>
         where Self: Sized,
               F: FnMut(Self::Output) -> Output
@@ -45,6 +50,7 @@ pub trait Parser<Input> {
         P(Map(self, f))
     }
 
+    #[inline(always)]
     fn map_err<F, Error>(self, f: F) -> P<MapErr<Self, F>>
         where Self: Sized,
               F: FnMut(Self::Error) -> Error
@@ -52,6 +58,7 @@ pub trait Parser<Input> {
         P(MapErr(self, f))
     }
 
+    #[inline(always)]
     fn and_then<F, Output>(self, f: F) -> P<AndThen<Self, F>>
         where Self: Sized,
               F: FnMut(Self::Output) -> std::result::Result<Output, Self::Error>
@@ -59,12 +66,14 @@ pub trait Parser<Input> {
         P(AndThen(self, f))
     }
 
+    #[inline(always)]
     fn optional(self) -> P<Optional<Self>>
         where Self: Sized
     {
         P(Optional(self))
     }
 
+    #[inline(always)]
     fn repeat<R>(self, range: R) -> P<Repeat<Self, R>>
         where Self: Sized,
               R: Range
@@ -79,6 +88,7 @@ impl<F, Input, Output, Error> Parser<Input> for F
     type Output = Output;
     type Error = Error;
 
+    #[inline(always)]
     fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
         self(input, from)
     }
@@ -93,6 +103,7 @@ impl<A, Input> Parser<Input> for P<A>
     type Output = A::Output;
     type Error = A::Error;
 
+    #[inline(always)]
     fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
         self.0.parse(input, from)
     }
@@ -101,6 +112,7 @@ impl<A, Input> Parser<Input> for P<A>
 impl<A, B> std::ops::BitOr<B> for P<A> {
     type Output = P<Or<A, B>>;
 
+    #[inline(always)]
     fn bitor(self, b: B) -> Self::Output {
         P(Or(self.0, b))
     }
@@ -109,6 +121,7 @@ impl<A, B> std::ops::BitOr<B> for P<A> {
 impl<A, B> std::ops::Shl<B> for P<A> {
     type Output = P<AndSkip<A, B>>;
 
+    #[inline(always)]
     fn shl(self, b: B) -> Self::Output {
         P(AndSkip(self.0, b))
     }
@@ -117,6 +130,7 @@ impl<A, B> std::ops::Shl<B> for P<A> {
 impl<A, B> std::ops::Shr<B> for P<A> {
     type Output = P<SkipAnd<A, B>>;
 
+    #[inline(always)]
     fn shr(self, b: B) -> Self::Output {
         P(SkipAnd(self.0, b))
     }
@@ -133,6 +147,7 @@ impl<A, B, Input> Parser<Input> for And<A, B>
     type Output = (A::Output, B::Output);
     type Error = A::Error;
 
+    #[inline(always)]
     fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
         let (from, a) = self.0.parse(input, from)?;
         let (from, b) = self.1.parse(input, from)?;
@@ -151,6 +166,7 @@ impl<A, B, Input> Parser<Input> for AndSkip<A, B>
     type Output = A::Output;
     type Error = A::Error;
 
+    #[inline(always)]
     fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
         let (from, a) = self.0.parse(input, from)?;
         let (from, _) = self.1.parse(input, from)?;
@@ -169,6 +185,7 @@ impl<A, B, Input> Parser<Input> for SkipAnd<A, B>
     type Output = B::Output;
     type Error = A::Error;
 
+    #[inline(always)]
     fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
         let (from, _) = self.0.parse(input, from)?;
         self.1.parse(input, from)
@@ -186,6 +203,7 @@ impl<A, B, Input> Parser<Input> for Or<A, B>
     type Output = A::Output;
     type Error = A::Error;
 
+    #[inline(always)]
     fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
         self.0
             .parse(input, from)
@@ -206,6 +224,7 @@ impl<A, Input> Parser<Input> for Try<A>
     type Output = A::Output;
     type Error = A::Error;
 
+    #[inline(always)]
     fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
         self.0.parse(input, from).map_err(|(_, error)| (from, error))
     }
@@ -221,6 +240,7 @@ impl<A, F, Input, Output> Parser<Input> for Map<A, F>
     type Output = Output;
     type Error = A::Error;
 
+    #[inline(always)]
     fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
         self.0
             .parse(input, from)
@@ -238,6 +258,7 @@ impl<A, F, Input, Error> Parser<Input> for MapErr<A, F>
     type Output = A::Output;
     type Error = Error;
 
+    #[inline(always)]
     fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
         self.0
             .parse(input, from)
@@ -256,6 +277,7 @@ macro_rules! tuple_impl {
             type Error = $head::Error;
 
             #[allow(non_snake_case)]
+            #[inline(always)]
             fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
                 let (ref mut $head, $(ref mut $tail),*) = *self;
                 let (from, $head) = $head.parse(input, from)?;
@@ -291,6 +313,7 @@ impl<A, F, Input, Output> Parser<Input> for AndThen<A, F>
     type Output = Output;
     type Error = A::Error;
 
+    #[inline(always)]
     fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
         self.0.parse(input, from).and_then(|(from, output)| match self.1(output) {
             Ok(output) => Ok((from, output)),
@@ -308,6 +331,7 @@ impl<A, Input> Parser<Input> for Optional<A>
     type Output = Option<A::Output>;
     type Error = A::Error;
 
+    #[inline(always)]
     fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
         match self.0.parse(input, from) {
             Ok((from, output)) => Ok((from, Some(output))),
@@ -318,55 +342,67 @@ impl<A, Input> Parser<Input> for Optional<A>
 }
 
 pub trait Range {
+    #[inline(always)]
     fn min(&self) -> usize;
+    #[inline(always)]
     fn max(&self) -> Option<usize>;
 }
 
 impl Range for usize {
+    #[inline(always)]
     fn min(&self) -> usize {
         *self
     }
 
+    #[inline(always)]
     fn max(&self) -> Option<usize> {
         Some(*self)
     }
 }
 
 impl Range for std::ops::RangeFull {
+    #[inline(always)]
     fn min(&self) -> usize {
         0
     }
 
+    #[inline(always)]
     fn max(&self) -> Option<usize> {
         None
     }
 }
 
 impl Range for std::ops::RangeTo<usize> {
+    #[inline(always)]
     fn min(&self) -> usize {
         0
     }
 
+    #[inline(always)]
     fn max(&self) -> Option<usize> {
         Some(self.end)
     }
 }
 
 impl Range for std::ops::RangeFrom<usize> {
+    #[inline(always)]
     fn min(&self) -> usize {
         self.start
     }
 
+    #[inline(always)]
     fn max(&self) -> Option<usize> {
         None
     }
 }
 
 impl Range for std::ops::Range<usize> {
+    #[inline(always)]
     fn min(&self) -> usize {
         self.start
     }
 
+    #[inline(always)]
     fn max(&self) -> Option<usize> {
         Some(self.end)
     }
@@ -378,6 +414,7 @@ pub struct Repeat<A, R: Range>(pub A, pub R);
 impl<A, R> P<Repeat<A, R>>
     where R: Range
 {
+    #[inline(always)]
     pub fn join<B, Input>(self, b: B) -> P<Join<A, B, R>>
         where A: Parser<Input>,
               B: Parser<Input, Error = A::Error>
@@ -394,6 +431,7 @@ impl<A, R, Input> Parser<Input> for Repeat<A, R>
     type Output = Vec<A::Output>;
     type Error = A::Error;
 
+    #[inline(always)]
     fn parse(&mut self, input: Input, mut from: usize) -> Result<Self::Output, Self::Error> {
         let (min, max) = (self.1.min(), self.1.max());
         let mut vec = vec![];
@@ -431,6 +469,7 @@ impl<A, B, R, Input> Parser<Input> for Join<A, B, R>
     type Output = Vec<A::Output>;
     type Error = A::Error;
 
+    #[inline(always)]
     fn parse(&mut self, input: Input, mut from: usize) -> Result<Self::Output, Self::Error> {
         let (min, max) = (self.2.min(), self.2.max());
         let mut vec = vec![];
@@ -477,6 +516,7 @@ impl<A, B, R, Input> Parser<Input> for Join<A, B, R>
 }
 
 #[allow(non_snake_case)]
+#[inline(always)]
 pub fn Position<Input, Error>(_input: Input, from: usize) -> Result<usize, Error> {
     Ok((from, from))
 }

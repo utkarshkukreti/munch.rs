@@ -14,6 +14,7 @@ impl<'a> Parser<&'a str> for char {
     type Output = char;
     type Error = Error<'static>;
 
+    #[inline(always)]
     fn parse(&mut self, input: &'a str, from: usize) -> Result<Self::Output, Self::Error> {
         if input[from..].starts_with(*self) {
             Ok((from + self.len_utf8(), *self))
@@ -27,6 +28,7 @@ impl<'a, 'tmp> Parser<&'a str> for &'tmp str {
     type Output = &'a str;
     type Error = Error<'tmp>;
 
+    #[inline(always)]
     fn parse(&mut self, input: &'a str, from: usize) -> Result<Self::Output, Self::Error> {
         if input[from..].starts_with(*self) {
             let to = from + self.len();
@@ -46,6 +48,7 @@ impl<'a, F> Parser<&'a str> for Satisfy<F>
     type Output = char;
     type Error = Error<'static>;
 
+    #[inline(always)]
     fn parse(&mut self, input: &'a str, from: usize) -> Result<Self::Output, Self::Error> {
         if let Some(char) = input[from..].chars().next() {
             if self.0(char) {
@@ -65,6 +68,7 @@ impl<'a, F> Parser<&'a str> for TakeWhile<F>
     type Output = &'a str;
     type Error = Error<'static>;
 
+    #[inline(always)]
     fn parse(&mut self, input: &'a str, from: usize) -> Result<Self::Output, Self::Error> {
         let mut chars = input[from..].chars();
         match chars.by_ref().skip_while(|&char| self.0(char)).next() {
@@ -86,6 +90,7 @@ impl<'a, F> Parser<&'a str> for TakeWhile1<F>
     type Output = &'a str;
     type Error = Error<'static>;
 
+    #[inline(always)]
     fn parse(&mut self, input: &'a str, from: usize) -> Result<Self::Output, Self::Error> {
         match TakeWhile(&mut self.0).parse(input, from) {
             Ok((_, "")) => Err((from, Error::TakeWhile1)),
@@ -103,6 +108,7 @@ impl<'a, P> Parser<&'a str> for Capture<P>
     type Output = &'a str;
     type Error = P::Error;
 
+    #[inline(always)]
     fn parse(&mut self, input: &'a str, from: usize) -> Result<Self::Output, Self::Error> {
         let (to, _) = self.0.parse(input, from)?;
         Ok((to, &input[from..to]))
@@ -116,6 +122,7 @@ impl<'a> Parser<&'a str> for Any {
     type Output = char;
     type Error = Error<'static>;
 
+    #[inline(always)]
     fn parse(&mut self, input: &'a str, from: usize) -> Result<Self::Output, Self::Error> {
         if let Some(char) = input[from..].chars().next() {
             Ok((from + char.len_utf8(), char))
@@ -132,6 +139,7 @@ impl<'a> Parser<&'a str> for End {
     type Output = ();
     type Error = Error<'static>;
 
+    #[inline(always)]
     fn parse(&mut self, input: &'a str, from: usize) -> Result<Self::Output, Self::Error> {
         if input.len() == from {
             Ok((from, ()))
