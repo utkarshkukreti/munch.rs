@@ -35,8 +35,7 @@ pub fn value(str: &str, from: usize) -> munch::Result<Value, munch::str::Error<'
             _ => false,
         }
     };
-    let symbol = Capture((Satisfy(|ch| is_symbol_head(ch)), TakeWhile(is_symbol_tail)))
-        .map(Value::Symbol);
+    let symbol = Capture((Satisfy(&is_symbol_head), TakeWhile(is_symbol_tail))).map(Value::Symbol);
 
     let list = P('(') >> ws() >> P(value).repeat(..).map(Value::List) << P(')');
     let vector = P('[') >> ws() >> P(value).repeat(..).map(Value::Vector) << P(']');
@@ -51,6 +50,7 @@ pub fn parse(str: &str) -> Result<Vec<Value>, (usize, munch::str::Error<'static>
     }
 }
 
+#[cfg(not(test))]
 pub fn main() {
     use std::io::prelude::*;
     use Value::*;
