@@ -44,7 +44,8 @@ pub fn value(str: &str, from: usize) -> munch::Result<Value, munch::str::Error<'
 }
 
 pub fn parse(str: &str) -> Result<Vec<Value>, (usize, munch::str::Error<'static>)> {
-    match (P(value).repeat(..) << munch::str::End).parse(str.trim_left(), 0) {
+    use munch::str::*;
+    match (P(TakeWhile(char::is_whitespace)) >> value.repeat(..) << End).parse(str, 0) {
         Ok((_, output)) => Ok(output),
         Err((from, error)) => Err((from, error)),
     }
