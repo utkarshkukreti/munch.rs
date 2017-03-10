@@ -71,13 +71,11 @@ impl<'a, F> Parser<&'a str> for TakeWhile<F>
     #[inline(always)]
     fn parse(&mut self, input: &'a str, from: usize) -> Result<Self::Output, Self::Error> {
         let mut chars = input[from..].chars();
-        match chars.by_ref().skip_while(|&char| self.0(char)).next() {
-            Some(char) => {
-                let to = input.len() - chars.as_str().len() - char.len_utf8();
-                Ok((to, &input[from..to]))
-            }
-            None => Ok((input.len(), &input[from..])),
-        }
+        let to = match chars.by_ref().skip_while(|&char| self.0(char)).next() {
+            Some(char) => input.len() - chars.as_str().len() - char.len_utf8(),
+            None => input.len(),
+        };
+        Ok((to, &input[from..to]))
     }
 }
 
