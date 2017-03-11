@@ -344,7 +344,7 @@ impl<A, Input> Parser<Input> for Optional<A>
     }
 }
 
-pub trait Range {
+pub trait Range: Clone {
     #[inline(always)]
     fn min(&self) -> usize;
     #[inline(always)]
