@@ -412,7 +412,7 @@ impl Range for std::ops::Range<usize> {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Repeat<A, R: Range>(pub A, pub R);
+pub struct Repeat<A, R: Range>(A, R);
 
 impl<A, R> P<Repeat<A, R>>
     where R: Range
@@ -458,7 +458,7 @@ impl<A, R, Input> Parser<Input> for Repeat<A, R>
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Fold<A, R: Range, Acc, F>(pub A, pub R, pub Acc, pub F);
+pub struct Fold<A, R: Range, Acc, F>(A, R, Acc, F);
 
 impl<A, R, Acc, F, Input, Output> Parser<Input> for Fold<A, R, Acc, F>
     where A: Parser<Input>,
@@ -499,7 +499,7 @@ impl<A, R, Acc, F, Input, Output> Parser<Input> for Fold<A, R, Acc, F>
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Join<A, B, R: Range>(pub A, pub B, pub R);
+pub struct Join<A, B, R: Range>(A, B, R);
 
 impl<A, B, R, Input> Parser<Input> for Join<A, B, R>
     where A: Parser<Input>,
