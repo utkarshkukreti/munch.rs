@@ -344,6 +344,40 @@ fn repeat() {
 }
 
 #[test]
+fn fold() {
+    fn t<R: Range + Clone>(range: R) {
+        let mut p1 = ('π', 'r', '²').repeat(range.clone());
+        let mut p1f = p1.clone().fold(Vec::new, |mut acc, x| {
+            acc.push(x);
+            acc
+        });
+
+        let flatten = |((a, b), c)| (a, b, c);
+        let mut p2 = (Try(('π', 'r')), '²').map(&flatten).repeat(range.clone());
+        let mut p2f = p2.clone().fold(Vec::new, |mut acc, x| {
+            acc.push(x);
+            acc
+        });
+
+        for i in 0..36 {
+            let string = "πr²".chars().cycle().take(i).collect::<String>();
+            assert_eq!(p1.parse(&string, 0), p1f.parse(&string, 0));
+            assert_eq!(p2.parse(&string, 0), p2f.parse(&string, 0));
+        }
+    }
+
+    t(..);
+    for i in 0..10 {
+        t(i);
+        t(..i);
+        t(i..);
+        for j in i..10 {
+            t(i..j);
+        }
+    }
+}
+
+#[test]
 fn join() {
     fn t<R: Range + Clone>(range: R) {
         use std::cmp::Ordering::*;

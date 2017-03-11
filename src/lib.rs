@@ -424,6 +424,15 @@ impl<A, R> P<Repeat<A, R>>
     {
         P(Join((self.0).0, b, (self.0).1))
     }
+
+    #[inline(always)]
+    pub fn fold<Acc, F, Input, Output>(self, acc: Acc, f: F) -> P<Fold<A, R, Acc, F>>
+        where A: Parser<Input>,
+              Acc: FnMut() -> Output,
+              F: FnMut(Output, A::Output) -> Output
+    {
+        P(Fold((self.0).0, (self.0).1, acc, f))
+    }
 }
 
 impl<A, R, Input> Parser<Input> for Repeat<A, R>
@@ -451,6 +460,47 @@ impl<A, R, Input> Parser<Input> for Repeat<A, R>
                 Err((from2, error)) => {
                     return if from == from2 && vec.len() >= min {
                         Ok((from2, vec))
+                    } else {
+                        Err((from2, error))
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct Fold<A, R: Range, Acc, F>(pub A, pub R, pub Acc, pub F);
+
+impl<A, R, Acc, F, Input, Output> Parser<Input> for Fold<A, R, Acc, F>
+    where A: Parser<Input>,
+          R: Range,
+          Acc: FnMut() -> Output,
+          F: FnMut(Output, A::Output) -> Output,
+          Input: Copy
+{
+    type Output = Output;
+    type Error = A::Error;
+
+    #[inline(always)]
+    fn parse(&mut self, input: Input, mut from: usize) -> Result<Self::Output, Self::Error> {
+        let (min, max) = (self.1.min(), self.1.max());
+        let mut acc = self.2();
+        let mut done = 0;
+        loop {
+            if Some(done) == max {
+                return Ok((from, acc));
+            }
+
+            match self.0.parse(input, from) {
+                Ok((from2, output)) => {
+                    from = from2;
+                    acc = self.3(acc, output);
+                    done += 1;
+                }
+                Err((from2, error)) => {
+                    return if from == from2 && done >= min {
+                        Ok((from2, acc))
                     } else {
                         Err((from2, error))
                     }
