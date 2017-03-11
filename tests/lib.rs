@@ -287,7 +287,7 @@ fn optional() {
 
 #[test]
 fn repeat() {
-    fn t<R: Range + Clone>(range: R) {
+    fn t<R: Range>(range: R) {
         use std::cmp::Ordering::*;
         let (min, max) = (range.min(), range.max());
         let mut p1 = ('π', 'r', '²').repeat(range.clone());
@@ -345,7 +345,7 @@ fn repeat() {
 
 #[test]
 fn fold() {
-    fn t<R: Range + Clone>(range: R) {
+    fn t<R: Range>(range: R) {
         let mut p1 = ('π', 'r', '²').repeat(range.clone());
         let mut p1f = p1.clone().fold(Vec::new, |mut acc, x| {
             acc.push(x);
@@ -379,7 +379,7 @@ fn fold() {
 
 #[test]
 fn join() {
-    fn t<R: Range + Clone>(range: R) {
+    fn t<R: Range>(range: R) {
         use std::cmp::Ordering::*;
         let (min, max) = (range.min(), range.max());
         let mut p1 = 'π'.repeat(range.clone()).join(('r', '²'));
