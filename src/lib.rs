@@ -501,6 +501,23 @@ impl<A, R, Acc, F, Input, Output> Parser<Input> for Fold<A, R, Acc, F>
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Join<A, B, R: Range>(A, B, R);
 
+impl<A, B, R: Range> P<Join<A, B, R>> {
+    #[inline(always)]
+    pub fn fold<Init, First, Rest, Input, Output>(self,
+                                                  init: Init,
+                                                  first: First,
+                                                  rest: Rest)
+                                                  -> P<JoinFold<A, B, R, Init, First, Rest>>
+        where A: Parser<Input>,
+              B: Parser<Input, Error = A::Error>,
+              Init: FnMut() -> Output,
+              First: FnMut(Output, A::Output) -> Output,
+              Rest: FnMut(Output, B::Output, A::Output) -> Output
+    {
+        P(JoinFold((self.0).0, (self.0).1, (self.0).2, init, first, rest))
+    }
+}
+
 impl<A, B, R, Input> Parser<Input> for Join<A, B, R>
     where A: Parser<Input>,
           B: Parser<Input, Error = A::Error>,
@@ -552,6 +569,74 @@ impl<A, B, R, Input> Parser<Input> for Join<A, B, R>
             let (from2, output) = self.0.parse(input, from)?;
             from = from2;
             vec.push(output);
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct JoinFold<A, B, R: Range, Init, First, Rest>(A, B, R, Init, First, Rest);
+
+impl<A, B, R, Init, First, Rest, Input, Output> Parser<Input>
+    for JoinFold<A, B, R, Init, First, Rest>
+    where A: Parser<Input>,
+          B: Parser<Input, Error = A::Error>,
+          R: Range,
+          Init: FnMut() -> Output,
+          First: FnMut(Output, A::Output) -> Output,
+          Rest: FnMut(Output, B::Output, A::Output) -> Output,
+          Input: Copy
+{
+    type Output = Output;
+    type Error = A::Error;
+
+    #[inline(always)]
+    fn parse(&mut self, input: Input, mut from: usize) -> Result<Self::Output, Self::Error> {
+        let (min, max) = (self.2.min(), self.2.max());
+        let mut acc = self.3();
+
+        if max == Some(0) {
+            return Ok((from, acc));
+        }
+
+        match self.0.parse(input, from) {
+            Ok((from2, output)) => {
+                from = from2;
+                acc = self.4(acc, output);
+            }
+            Err((from2, error)) => {
+                return if min == 0 {
+                    Ok((from2, acc))
+                } else {
+                    Err((from2, error))
+                }
+            }
+        }
+
+        let mut done = 1;
+
+        loop {
+            if Some(done) == max {
+                return Ok((from, acc));
+            }
+
+            let separator = match self.1.parse(input, from) {
+                Ok((from2, output)) => {
+                    from = from2;
+                    output
+                }
+                Err((from2, error)) => {
+                    return if from == from2 && done >= min {
+                        Ok((from2, acc))
+                    } else {
+                        Err((from2, error))
+                    }
+                }
+            };
+
+            let (from2, output) = self.0.parse(input, from)?;
+            from = from2;
+            acc = self.5(acc, separator, output);
+            done += 1;
         }
     }
 }

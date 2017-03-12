@@ -450,6 +450,40 @@ fn join() {
 }
 
 #[test]
+fn join_fold() {
+    fn t<R: Range>(range: R) {
+        let first = |mut vec: Vec<_>, output| {
+            vec.push(output);
+            vec
+        };
+        let rest = |mut vec: Vec<_>, separator, output| {
+            assert_eq!(separator, ('r', '²'));
+            vec.push(output);
+            vec
+        };
+        let mut p1 = 'π'.repeat(range.clone()).join(('r', '²'));
+        let mut p1f = p1.clone().fold(Vec::new, &first, &rest);
+        let mut p2 = 'π'.repeat(range.clone()).join(Try(('r', '²')));
+        let mut p2f = p2.clone().fold(Vec::new, &first, &rest);
+        for i in 0..36 {
+            let string = "πr²".chars().cycle().take(i).collect::<String>();
+            assert_eq!(p1.parse(&string, 0), p1f.parse(&string, 0));
+            assert_eq!(p2.parse(&string, 0), p2f.parse(&string, 0));
+        }
+    }
+
+    t(..);
+    for i in 0..10 {
+        t(i);
+        t(..i);
+        t(i..);
+        for j in i..10 {
+            t(i..j);
+        }
+    }
+}
+
+#[test]
 fn position() {
     let mut p = muncher! {
         TakeWhile(char::is_whitespace),
