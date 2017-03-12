@@ -528,48 +528,22 @@ impl<A, B, R, Input> Parser<Input> for Join<A, B, R>
     type Error = A::Error;
 
     #[inline(always)]
-    fn parse(&mut self, input: Input, mut from: usize) -> Result<Self::Output, Self::Error> {
-        let (min, max) = (self.2.min(), self.2.max());
-        let mut vec = vec![];
+    fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
+        let Join(ref mut parser, ref mut separator, ref range) = *self;
 
-        if max == Some(0) {
-            return Ok((from, vec));
-        }
-
-        match self.0.parse(input, from) {
-            Ok((from2, output)) => {
-                from = from2;
-                vec.push(output);
-            }
-            Err((from2, error)) => {
-                return if min == 0 {
-                    Ok((from2, vec))
-                } else {
-                    Err((from2, error))
-                }
-            }
-        }
-
-        loop {
-            if Some(vec.len()) == max {
-                return Ok((from, vec));
-            }
-
-            match self.1.parse(input, from) {
-                Ok((from2, _)) => from = from2,
-                Err((from2, error)) => {
-                    return if from == from2 && vec.len() >= min {
-                        Ok((from2, vec))
-                    } else {
-                        Err((from2, error))
-                    }
-                }
-            }
-
-            let (from2, output) = self.0.parse(input, from)?;
-            from = from2;
-            vec.push(output);
-        }
+        JoinFold(|input, from| parser.parse(input, from),
+                 |input, from| separator.parse(input, from),
+                 range.clone(),
+                 Vec::new,
+                 |mut vec: Vec<_>, output| {
+                     vec.push(output);
+                     vec
+                 },
+                 |mut vec: Vec<_>, _, output| {
+                     vec.push(output);
+                     vec
+                 })
+            .parse(input, from)
     }
 }
 
