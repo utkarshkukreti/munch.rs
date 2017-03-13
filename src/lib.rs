@@ -563,7 +563,7 @@ impl<A, B, R, Init, First, Rest, Input, Output> Parser<Input>
     type Output = Output;
     type Error = A::Error;
 
-    #[inline(always)]
+    #[inline]
     fn parse(&mut self, input: Input, mut from: usize) -> Result<Self::Output, Self::Error> {
         let (min, max) = (self.2.min(), self.2.max());
         let mut acc = self.3();
