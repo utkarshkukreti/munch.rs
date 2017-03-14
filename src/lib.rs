@@ -467,14 +467,13 @@ impl<A, R, Input> Parser<Input> for Repeat<A, R>
 
     #[inline(always)]
     fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
-        let Repeat(ref mut parser, ref range) = *self;
-        Fold(|input, from| parser.parse(input, from),
-             range.clone(),
-             Vec::new,
-             |mut vec: Vec<_>, output| {
-                 vec.push(output);
-                 vec
-             })
+        self.0
+            .by_ref()
+            .repeat(self.1.clone())
+            .fold(Vec::new, |mut vec: Vec<_>, output| {
+                vec.push(output);
+                vec
+            })
             .parse(input, from)
     }
 }
