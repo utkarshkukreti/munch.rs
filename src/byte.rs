@@ -4,6 +4,7 @@ use {Parser, Result};
 pub enum Error<'a> {
     Byte(u8),
     Bytes(&'a [u8]),
+    Satisfy,
 }
 
 impl<'a> Parser<&'a [u8]> for u8 {
@@ -32,5 +33,25 @@ impl<'a, 'tmp> Parser<&'a [u8]> for &'tmp [u8] {
         } else {
             Err((from, Error::Bytes(*self)))
         }
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct Satisfy<F>(pub F) where F: FnMut(u8) -> bool;
+
+impl<'a, F> Parser<&'a [u8]> for Satisfy<F>
+    where F: FnMut(u8) -> bool
+{
+    type Output = u8;
+    type Error = Error<'static>;
+
+    #[inline(always)]
+    fn parse(&mut self, input: &'a [u8], from: usize) -> Result<Self::Output, Self::Error> {
+        if let Some(&byte) = input.get(from) {
+            if self.0(byte) {
+                return Ok((from + 1, byte));
+            }
+        }
+        Err((from, Error::Satisfy))
     }
 }
