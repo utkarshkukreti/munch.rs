@@ -11,6 +11,13 @@ pub trait Parser<Input> {
     fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error>;
 
     #[inline(always)]
+    fn by_ref(&mut self) -> P<ByRef<Self>>
+        where Self: Sized
+    {
+        P(ByRef(self))
+    }
+
+    #[inline(always)]
     fn and<B>(self, b: B) -> P<And<Self, B>>
         where Self: Sized,
               B: Parser<Input, Error = Self::Error>
@@ -98,6 +105,21 @@ impl<F, Input, Output, Error> Parser<Input> for F
 pub struct P<A>(pub A);
 
 impl<A, Input> Parser<Input> for P<A>
+    where A: Parser<Input>
+{
+    type Output = A::Output;
+    type Error = A::Error;
+
+    #[inline(always)]
+    fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
+        self.0.parse(input, from)
+    }
+}
+
+#[derive(Debug, PartialEq)]
+pub struct ByRef<'a, A: 'a>(pub &'a mut A);
+
+impl<'a, A, Input> Parser<Input> for ByRef<'a, A>
     where A: Parser<Input>
 {
     type Output = A::Output;

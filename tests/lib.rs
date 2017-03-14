@@ -7,6 +7,17 @@ use munch::str::*;
 mod t;
 
 #[test]
+fn by_ref() {
+    t! {
+        'π'.by_ref() => {
+            "" => Err((0, Error::Char('π'))),
+            "π" => Ok((2, 'π')),
+            "πr" => Ok((2, 'π')),
+        },
+    }
+}
+
+#[test]
 fn p() {
     t! {
         P('π') => {
