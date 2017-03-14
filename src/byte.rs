@@ -55,3 +55,22 @@ impl<'a, F> Parser<&'a [u8]> for Satisfy<F>
         Err((from, Error::Satisfy))
     }
 }
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct TakeWhile<F>(pub F) where F: FnMut(u8) -> bool;
+
+impl<'a, F> Parser<&'a [u8]> for TakeWhile<F>
+    where F: FnMut(u8) -> bool
+{
+    type Output = &'a [u8];
+    type Error = Error<'static>;
+
+    #[inline(always)]
+    fn parse(&mut self, input: &'a [u8], from: usize) -> Result<Self::Output, Self::Error> {
+        let to = match input[from..].iter().position(|&byte| !self.0(byte)) {
+            Some(position) => from + position,
+            None => input.len(),
+        };
+        Ok((to, &input[from..to]))
+    }
+}

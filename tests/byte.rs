@@ -49,3 +49,16 @@ fn satisfy() {
         },
     }
 }
+
+#[test]
+fn take_while() {
+    tb! {
+        TakeWhile(is_alphabetic) => {
+            b"" => Ok((0, b"".as_ref())),
+            b"p" => Ok((1, b"p".as_ref())),
+            b"pr" => Ok((2, b"pr".as_ref())),
+            b"pr2" => Ok((2, b"pr".as_ref())),
+            b"pr2h" => Ok((2, b"pr".as_ref())),
+        },
+    }
+}
