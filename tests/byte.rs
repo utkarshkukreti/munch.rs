@@ -19,3 +19,15 @@ fn byte() {
         },
     }
 }
+
+#[test]
+fn bytes() {
+    tb! {
+        b"pr".as_ref() => {
+            b"" => Err((0, Error::Bytes(b"pr"))),
+            b"p" => Err((0, Error::Bytes(b"pr"))),
+            b"pr" => Ok((2, b"pr".as_ref())),
+            b"pr2" => Ok((2, b"pr".as_ref())),
+        },
+    }
+}
