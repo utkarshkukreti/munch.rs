@@ -550,20 +550,19 @@ impl<A, B, R, Input> Parser<Input> for Join<A, B, R>
 
     #[inline(always)]
     fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
-        let Join(ref mut parser, ref mut separator, ref range) = *self;
-
-        JoinFold(|input, from| parser.parse(input, from),
-                 |input, from| separator.parse(input, from),
-                 range.clone(),
-                 Vec::new,
-                 |mut vec: Vec<_>, output| {
-                     vec.push(output);
-                     vec
-                 },
-                 |mut vec: Vec<_>, _, output| {
-                     vec.push(output);
-                     vec
-                 })
+        self.0
+            .by_ref()
+            .repeat(self.2.clone())
+            .join(self.1.by_ref())
+            .fold(Vec::new,
+                  |mut vec: Vec<_>, output| {
+                      vec.push(output);
+                      vec
+                  },
+                  |mut vec: Vec<_>, _, output| {
+                      vec.push(output);
+                      vec
+                  })
             .parse(input, from)
     }
 }
