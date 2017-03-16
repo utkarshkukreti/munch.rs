@@ -1,7 +1,8 @@
-use {Parser, Result};
+use {Parser, Result, ascii};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Error<'a> {
+    Ascii(ascii::Error),
     Char(char),
     Str(&'a str),
     Satisfy,
