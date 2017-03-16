@@ -1,11 +1,16 @@
 extern crate munch;
 
-use munch::{P, Parser};
+use munch::{Optional, P, Parser, Try};
 
 pub static EXAMPLE: &'static str = "
 (defn sum [xs]
   (reduce + 0 xs))
-(println (sum [1 2 3 4 5]))
+(println (sum [3 -14159 +26535 -89793 -23846]))
+(->> (range)
+     (map (fn [x] (* x x)))
+     (filter even?)
+     (take 10)
+     (reduce +))
 ";
 
 #[derive(Clone, Debug, PartialEq)]
@@ -21,7 +26,8 @@ pub fn value(str: &str, from: usize) -> munch::Result<Value, munch::str::Error<'
 
     let ws = || P(TakeWhile(char::is_whitespace));
 
-    let integer = TakeWhile1(|ch| ch.is_digit(10)).map(|str| Value::Integer(str.parse().unwrap()));
+    let integer = P(Capture(Try((Optional('-'.or('+')), TakeWhile1(|ch| ch.is_digit(10)))))
+        .map(|str| Value::Integer(str.parse().unwrap())));
 
     let is_symbol_head = |ch| match ch {
         'a'...'z' | 'A'...'Z' | '.' | '*' | '+' | '!' | '-' | '_' | '?' | '$' | '%' | '&' |
@@ -66,8 +72,22 @@ pub fn main() {
                                            Symbol("xs")])]),
                        List(vec![Symbol("println"),
                                  List(vec![Symbol("sum"),
-                                           Vector(vec![Integer(1), Integer(2), Integer(3),
-                                                       Integer(4), Integer(5)])])])]));
+                                           Vector(vec![Integer(3),
+                                                       Integer(-14159),
+                                                       Integer(26535),
+                                                       Integer(-89793),
+                                                       Integer(-23846)])])]),
+                       List(vec![Symbol("->>"),
+                                 List(vec![Symbol("range")]),
+                                 List(vec![Symbol("map"),
+                                           List(vec![Symbol("fn"),
+                                                     Vector(vec![Symbol("x")]),
+                                                     List(vec![Symbol("*"),
+                                                               Symbol("x"),
+                                                               Symbol("x")])])]),
+                                 List(vec![Symbol("filter"), Symbol("even?")]),
+                                 List(vec![Symbol("take"), Integer(10)]),
+                                 List(vec![Symbol("reduce"), Symbol("+")])])]));
 
     let mut string = String::new();
     let stdin = std::io::stdin();
