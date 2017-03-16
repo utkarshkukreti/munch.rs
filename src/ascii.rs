@@ -3,6 +3,7 @@ use {Parser, Result, str};
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Error {
     Satisfy,
+    TakeWhile1,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -41,5 +42,23 @@ impl<'a, F> Parser<&'a str> for TakeWhile<F>
             None => input.len(),
         };
         Ok((to, &input[from..to]))
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct TakeWhile1<F>(pub F) where F: FnMut(u8) -> bool;
+
+impl<'a, F> Parser<&'a str> for TakeWhile1<F>
+    where F: FnMut(u8) -> bool
+{
+    type Output = &'a str;
+    type Error = str::Error<'static>;
+
+    #[inline(always)]
+    fn parse(&mut self, input: &'a str, from: usize) -> Result<Self::Output, Self::Error> {
+        match TakeWhile(&mut self.0).parse(input, from) {
+            Ok((_, "")) => Err((from, str::Error::Ascii(Error::TakeWhile1))),
+            otherwise => otherwise,
+        }
     }
 }

@@ -50,3 +50,23 @@ fn take_while() {
         },
     }
 }
+
+#[test]
+fn take_while1() {
+    t! {
+        TakeWhile1(is_alphabetic) => {
+            "" => Err((0, str::Error::Ascii(Error::TakeWhile1))),
+            "p" => Ok((1, "p")),
+            "pr" => Ok((2, "pr")),
+            "pr2" => Ok((2, "pr")),
+            "pr2h" => Ok((2, "pr")),
+        },
+        TakeWhile1(|u8| u8 == 0x7F) => {
+            "\x7F" => Ok((1, "\x7F")),
+            "\x7F\x7F" => Ok((2, "\x7F\x7F")),
+        },
+        TakeWhile1(|u8| u8 == "π".as_bytes()[0]) => {
+            "π" => Err((0, str::Error::Ascii(Error::TakeWhile1))),
+        },
+    }
+}
