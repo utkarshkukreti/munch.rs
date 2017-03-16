@@ -15,10 +15,11 @@ pub enum Error {
 
 pub fn parse(str: &str) -> Result<Ip, (usize, Error)> {
     use self::Error;
+    use munch::ascii;
     use munch::str::*;
 
     let octet = || {
-        P(Satisfy(|ch| ch.is_digit(10))
+        P(ascii::Satisfy(|b| b'0' <= b && b <= b'9')
                 .repeat(1..3)
                 .fold(|| 0, |acc, x| acc * 10 + x as u16 - 48))
             .map_err(|_| Error::ExpectedInteger)
