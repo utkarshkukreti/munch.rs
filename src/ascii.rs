@@ -24,3 +24,22 @@ impl<'a, F> Parser<&'a str> for Satisfy<F>
         Err((from, str::Error::Ascii(Error::Satisfy)))
     }
 }
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct TakeWhile<F>(pub F) where F: FnMut(u8) -> bool;
+
+impl<'a, F> Parser<&'a str> for TakeWhile<F>
+    where F: FnMut(u8) -> bool
+{
+    type Output = &'a str;
+    type Error = str::Error<'static>;
+
+    #[inline(always)]
+    fn parse(&mut self, input: &'a str, from: usize) -> Result<Self::Output, Self::Error> {
+        let to = match input[from..].as_bytes().iter().position(|&u8| u8 > 0x7F || !self.0(u8)) {
+            Some(position) => from + position,
+            None => input.len(),
+        };
+        Ok((to, &input[from..to]))
+    }
+}
