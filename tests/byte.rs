@@ -97,3 +97,14 @@ fn capture() {
         },
     }
 }
+
+#[test]
+fn any() {
+    tb! {
+        Any => {
+            b"" => Err((0, Error::Any)),
+            b"p" => Ok((1, b'p')),
+            b"pr" => Ok((1, b'p')),
+        },
+    }
+}
