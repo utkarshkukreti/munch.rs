@@ -12,6 +12,14 @@ fn is_alphabetic(b: u8) -> bool {
     }
 }
 
+fn is_alphanumeric(b: u8) -> bool {
+    is_alphabetic(b) ||
+    match b {
+        b'0'...b'9' => true,
+        _ => false,
+    }
+}
+
 #[test]
 fn byte() {
     tb! {
@@ -72,6 +80,20 @@ fn take_while1() {
             b"pr" => Ok((2, b"pr".as_ref())),
             b"pr2" => Ok((2, b"pr".as_ref())),
             b"pr2h" => Ok((2, b"pr".as_ref())),
+        },
+    }
+}
+
+#[test]
+fn capture() {
+    tb! {
+        Capture((Satisfy(is_alphabetic), TakeWhile(is_alphanumeric))) => {
+            b"1" => Err((0, Error::Satisfy)),
+            b"p" => Ok((1, b"p".as_ref())),
+            b"pr" => Ok((2, b"pr".as_ref())),
+            b"pr2" => Ok((3, b"pr2".as_ref())),
+            b"prr" => Ok((3, b"prr".as_ref())),
+            b"prrh" => Ok((4, b"prrh".as_ref())),
         },
     }
 }
