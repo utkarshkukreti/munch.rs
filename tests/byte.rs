@@ -108,3 +108,19 @@ fn any() {
         },
     }
 }
+
+#[test]
+fn end() {
+    tb! {
+        End => {
+            b"" => Ok((0, ())),
+            b"p" => Err((0, Error::End)),
+            b"pr" => Err((0, Error::End)),
+        },
+        (b'p', End) => {
+            b"" => Err((0, Error::Byte(b'p'))),
+            b"p" => Ok((1, (b'p', ()))),
+            b"pr" => Err((1, Error::End)),
+        },
+    }
+}
