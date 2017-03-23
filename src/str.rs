@@ -17,11 +17,16 @@ impl<'a> Parser<&'a str> for char {
 
     #[inline(always)]
     fn parse(&mut self, input: &'a str, from: usize) -> Result<Self::Output, Self::Error> {
-        if input[from..].starts_with(*self) {
-            Ok((from + self.len_utf8(), *self))
+        if *self as u32 <= 0x7F {
+            if input.as_bytes().get(from).cloned() == Some(*self as u8) {
+                return Ok((from + 1, *self));
+            }
         } else {
-            Err((from, Error::Char(*self)))
+            if input[from..].starts_with(*self) {
+                return Ok((from + self.len_utf8(), *self));
+            }
         }
+        Err((from, Error::Char(*self)))
     }
 }
 
