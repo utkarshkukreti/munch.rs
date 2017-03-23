@@ -15,11 +15,10 @@ pub enum Error {
 
 pub fn parse(str: &str) -> Result<Ip, (usize, Error)> {
     use self::Error;
-    use munch::ascii;
-    use munch::str::*;
+    use munch::byte::*;
 
     let octet = || {
-        P(ascii::Satisfy(|b| b'0' <= b && b <= b'9')
+        P(Satisfy(|b| b'0' <= b && b <= b'9')
                 .repeat(1..3)
                 .fold(|| 0, |acc, x| acc * 10 + x as u16 - 48))
             .map_err(|_| Error::ExpectedInteger)
@@ -30,14 +29,14 @@ pub fn parse(str: &str) -> Result<Ip, (usize, Error)> {
             })
     };
 
-    let dot = || '.'.map_err(|_| Error::ExpectedDot);
+    let dot = || b'.'.map_err(|_| Error::ExpectedDot);
 
     (octet() << dot(),
      octet() << dot(),
      octet() << dot(),
      octet() << End.map_err(|_| Error::ExpectedEnd))
         .map(|(a, b, c, d)| Ip(a, b, c, d))
-        .parse(str, 0)
+        .parse(str.as_bytes(), 0)
         .map(|(_, ip)| ip)
 }
 
