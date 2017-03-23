@@ -3,7 +3,7 @@ name = "munch"
 version = "0.3.1"
 authors = ["Utkarsh Kukreti <utkarshkukreti@gmail.com>"]
 
-description = "Fast, zero-copy parser combinator library for strings with an elegant Parsec/Attoparsec inspired API."
+description = "Blazing fast, zero-copy parser combinator library with an elegant API for both strings and bytes."
 
 documentation = "https://docs.rs/munch"
 homepage = "https://github.com/utkarshkukreti/munch.rs"
