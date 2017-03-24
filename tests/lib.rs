@@ -355,6 +355,20 @@ fn repeat() {
 }
 
 #[test]
+fn collect() {
+    use std::collections::HashMap;
+
+    let mut p = (P(Any) << ':', Any).repeat(..).collect();
+
+    t! {
+        p => {
+            "" => Ok((0, HashMap::new())),
+            "π:r²:h" => Ok((8, [('π', 'r'), ('²', 'h')].iter().cloned().collect())),
+        },
+    }
+}
+
+#[test]
 fn fold() {
     fn t<R: Range>(range: R) {
         let mut p1 = ('π', 'r', '²').repeat(range.clone());

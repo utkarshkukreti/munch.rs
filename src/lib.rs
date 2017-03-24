@@ -442,6 +442,14 @@ impl<A, R> P<Repeat<A, R>>
     where R: Range
 {
     #[inline(always)]
+    pub fn collect<C, Input>(self) -> P<Collect<A, R, C>>
+        where A: Parser<Input>,
+              C: Default + Extend<A::Output>
+    {
+        P(Collect((self.0).0, (self.0).1, std::marker::PhantomData))
+    }
+
+    #[inline(always)]
     pub fn join<B, Input>(self, b: B) -> P<Join<A, B, R>>
         where A: Parser<Input>,
               B: Parser<Input, Error = A::Error>
@@ -475,6 +483,31 @@ impl<A, R, Input> Parser<Input> for Repeat<A, R>
             .fold(Vec::new, |mut vec: Vec<_>, output| {
                 vec.push(output);
                 vec
+            })
+            .parse(input, from)
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct Collect<A, R: Range, C>(A, R, std::marker::PhantomData<C>);
+
+impl<A, R, C, Input> Parser<Input> for Collect<A, R, C>
+    where A: Parser<Input>,
+          R: Range,
+          C: Default + Extend<A::Output>,
+          Input: Copy
+{
+    type Output = C;
+    type Error = A::Error;
+
+    #[inline(always)]
+    fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
+        self.0
+            .by_ref()
+            .repeat(self.1.clone())
+            .fold(C::default, |mut c, output| {
+                c.extend(std::iter::once(output));
+                c
             })
             .parse(input, from)
     }
