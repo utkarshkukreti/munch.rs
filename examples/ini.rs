@@ -20,10 +20,10 @@ pub fn parse(str: &str) -> Result<Value, (usize, munch::str::Error<'static>)> {
     let value = P(TakeWhile(|ch| ch != '\n' && ch != ';'));
 
     let kv = (key << s() << '=' << s(), value << s() << Optional(comment) << ws());
-    let kvs = kv.repeat(..).map(|vec| vec.into_iter().collect());
+    let kvs = kv.repeat(..).collect();
 
     let section = (header, kvs);
-    let sections = section.repeat(..).map(|vec| vec.into_iter().collect());
+    let sections = section.repeat(..).collect();
 
     match (ws() >> sections << End).parse(str, 0) {
         Ok((_, output)) => Ok(output),
