@@ -25,10 +25,7 @@ pub fn parse(str: &str) -> Result<Value, (usize, munch::str::Error<'static>)> {
     let section = (header, kvs);
     let sections = section.repeat(..).collect();
 
-    match (ws() >> sections << End).parse(str, 0) {
-        Ok((_, output)) => Ok(output),
-        Err((from, error)) => Err((from, error)),
-    }
+    (ws() >> sections << End).parse(str, 0).map(|(_, output)| output)
 }
 
 pub static EXAMPLE: &'static str = "
