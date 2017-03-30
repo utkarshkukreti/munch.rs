@@ -1,6 +1,6 @@
 extern crate munch;
 
-use munch::{P, Parser};
+use munch::Parser;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Ip(pub u8, pub u8, pub u8, pub u8);
@@ -18,9 +18,9 @@ pub fn parse(str: &str) -> Result<Ip, (usize, Error)> {
     use munch::byte::*;
 
     let octet = || {
-        P(Satisfy(|b| b'0' <= b && b <= b'9')
-                .repeat(1..3)
-                .fold(|| 0, |acc, x| acc * 10 + x as u16 - 48))
+        Satisfy(|b| b'0' <= b && b <= b'9')
+            .repeat(1..3)
+            .fold(|| 0, |acc, x| acc * 10 + x as u16 - 48)
             .map_err(|_| Error::ExpectedInteger)
             .and_then(|n| if n < 256 {
                 Ok(n as u8)
