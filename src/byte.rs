@@ -8,6 +8,7 @@ pub enum Error<'a> {
     TakeWhile1,
     Any,
     End,
+    Binary(Endianness, Type),
 }
 
 impl<'a> Parser<&'a [u8]> for u8 {
@@ -143,5 +144,170 @@ impl<'a> Parser<&'a [u8]> for End {
         } else {
             Err((from, Error::End))
         }
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum Endianness {
+    Little,
+    Big,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+#[allow(non_camel_case_types)]
+pub enum Type {
+    u8,
+    u16,
+    u32,
+    u64,
+    i8,
+    i16,
+    i32,
+    i64,
+    f32,
+    f64,
+}
+
+macro_rules! read {
+    ($input:expr, $from:expr, $ty:ident, $endianness:ident, $method:ident) => {{
+        // Unsafe code adapted from:
+        // https://github.com/BurntSushi/byteorder/blob/f8e7685b3a81/src/lib.rs#L790-L803
+        let size = ::std::mem::size_of::<$ty>();
+        let mut data: $ty = 0;
+        if $input.len() >= $from + size {
+            unsafe {
+                ::std::ptr::copy_nonoverlapping(
+                    $input.as_ptr().offset($from as isize),
+                    &mut data as *mut $ty as *mut u8,
+                    size);
+            }
+            Ok(($from + size, data.$method()))
+        } else {
+            Err(($from, Error::Binary(Endianness::$endianness, Type::$ty)))
+        }
+    }}
+}
+
+pub enum LittleEndian {}
+
+impl LittleEndian {
+    #[inline(always)]
+    pub fn u8(input: &[u8], from: usize) -> Result<u8, Error<'static>> {
+        read!(input, from, u8, Little, to_le)
+    }
+
+    #[inline(always)]
+    pub fn u16(input: &[u8], from: usize) -> Result<u16, Error<'static>> {
+        read!(input, from, u16, Little, to_le)
+    }
+
+    #[inline(always)]
+    pub fn u32(input: &[u8], from: usize) -> Result<u32, Error<'static>> {
+        read!(input, from, u32, Little, to_le)
+    }
+
+    #[inline(always)]
+    pub fn u64(input: &[u8], from: usize) -> Result<u64, Error<'static>> {
+        read!(input, from, u64, Little, to_le)
+    }
+
+    #[inline(always)]
+    pub fn i8(input: &[u8], from: usize) -> Result<i8, Error<'static>> {
+        read!(input, from, i8, Little, to_le)
+    }
+
+    #[inline(always)]
+    pub fn i16(input: &[u8], from: usize) -> Result<i16, Error<'static>> {
+        read!(input, from, i16, Little, to_le)
+    }
+
+    #[inline(always)]
+    pub fn i32(input: &[u8], from: usize) -> Result<i32, Error<'static>> {
+        read!(input, from, i32, Little, to_le)
+    }
+
+    #[inline(always)]
+    pub fn i64(input: &[u8], from: usize) -> Result<i64, Error<'static>> {
+        read!(input, from, i64, Little, to_le)
+    }
+
+    #[inline(always)]
+    pub fn f32(input: &[u8], from: usize) -> Result<f32, Error<'static>> {
+        // Unsafe code adapted from:
+        // https://github.com/BurntSushi/byteorder/blob/f8e7685b3a81/src/lib.rs#L517
+        Self::u32.map(|u32| unsafe { ::std::mem::transmute::<u32, f32>(u32) })
+            .map_err(|_| Error::Binary(Endianness::Little, Type::f32))
+            .parse(input, from)
+    }
+
+    #[inline(always)]
+    pub fn f64(input: &[u8], from: usize) -> Result<f64, Error<'static>> {
+        // Unsafe code adapted from:
+        // https://github.com/BurntSushi/byteorder/blob/f8e7685b3a81/src/lib.rs#L540
+        Self::u64.map(|u64| unsafe { ::std::mem::transmute::<u64, f64>(u64) })
+            .map_err(|_| Error::Binary(Endianness::Little, Type::f64))
+            .parse(input, from)
+    }
+}
+
+pub enum BigEndian {}
+
+impl BigEndian {
+    #[inline(always)]
+    pub fn u8(input: &[u8], from: usize) -> Result<u8, Error<'static>> {
+        read!(input, from, u8, Big, to_be)
+    }
+
+    #[inline(always)]
+    pub fn u16(input: &[u8], from: usize) -> Result<u16, Error<'static>> {
+        read!(input, from, u16, Big, to_be)
+    }
+
+    #[inline(always)]
+    pub fn u32(input: &[u8], from: usize) -> Result<u32, Error<'static>> {
+        read!(input, from, u32, Big, to_be)
+    }
+
+    #[inline(always)]
+    pub fn u64(input: &[u8], from: usize) -> Result<u64, Error<'static>> {
+        read!(input, from, u64, Big, to_be)
+    }
+
+    #[inline(always)]
+    pub fn i8(input: &[u8], from: usize) -> Result<i8, Error<'static>> {
+        read!(input, from, i8, Big, to_be)
+    }
+
+    #[inline(always)]
+    pub fn i16(input: &[u8], from: usize) -> Result<i16, Error<'static>> {
+        read!(input, from, i16, Big, to_be)
+    }
+
+    #[inline(always)]
+    pub fn i32(input: &[u8], from: usize) -> Result<i32, Error<'static>> {
+        read!(input, from, i32, Big, to_be)
+    }
+
+    #[inline(always)]
+    pub fn i64(input: &[u8], from: usize) -> Result<i64, Error<'static>> {
+        read!(input, from, i64, Big, to_be)
+    }
+
+    #[inline(always)]
+    pub fn f32(input: &[u8], from: usize) -> Result<f32, Error<'static>> {
+        // Unsafe code adapted from:
+        // https://github.com/BurntSushi/byteorder/blob/f8e7685b3a81/src/lib.rs#L517
+        Self::u32.map(|u32| unsafe { ::std::mem::transmute::<u32, f32>(u32) })
+            .map_err(|_| Error::Binary(Endianness::Big, Type::f32))
+            .parse(input, from)
+    }
+
+    #[inline(always)]
+    pub fn f64(input: &[u8], from: usize) -> Result<f64, Error<'static>> {
+        // Unsafe code adapted from:
+        // https://github.com/BurntSushi/byteorder/blob/f8e7685b3a81/src/lib.rs#L540
+        Self::u64.map(|u64| unsafe { ::std::mem::transmute::<u64, f64>(u64) })
+            .map_err(|_| Error::Binary(Endianness::Big, Type::f64))
+            .parse(input, from)
     }
 }
