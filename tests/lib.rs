@@ -297,6 +297,26 @@ fn optional() {
 }
 
 #[test]
+fn bind() {
+    t! {
+        Any.bind(|ch| ch) => {
+            "" => Err((0, Error::Any)),
+            "π" => Err((2, Error::Char('π'))),
+            "πr" => Err((2, Error::Char('π'))),
+            "ππ" => Ok((4, 'π')),
+            "ππr" => Ok((4, 'π')),
+        },
+        Any.bind(|a| std::char::from_u32(a as u32 + 1).unwrap().map(move |b| (a, b))) => {
+            "" => Err((0, Error::Any)),
+            "π" => Err((2, Error::Char('ρ'))),
+            "πr" => Err((2, Error::Char('ρ'))),
+            "πρ" => Ok((4, ('π', 'ρ'))),
+            "πρς" => Ok((4, ('π', 'ρ'))),
+        },
+    }
+}
+
+#[test]
 fn repeat() {
     fn t<R: Range>(range: R) {
         use std::cmp::Ordering::*;

@@ -83,6 +83,15 @@ pub trait Parser<Input> {
     }
 
     #[inline(always)]
+    fn bind<B, F>(self, f: F) -> P<Bind<Self, F>>
+        where Self: Sized,
+              B: Parser<Input, Error = Self::Error>,
+              F: FnMut(Self::Output) -> B
+    {
+        P(Bind(self, f))
+    }
+
+    #[inline(always)]
     fn repeat<R>(self, range: R) -> P<Repeat<Self, R>>
         where Self: Sized,
               R: Range
@@ -363,6 +372,27 @@ impl<A, Input> Parser<Input> for Optional<A>
         match self.0.parse(input, from) {
             Ok((from, output)) => Ok((from, Some(output))),
             Err((from2, _)) if from == from2 => Ok((from, None)),
+            Err((from, error)) => Err((from, error)),
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct Bind<A, F>(pub A, pub F);
+
+impl<A, B, F, Input> Parser<Input> for Bind<A, F>
+    where A: Parser<Input>,
+          B: Parser<Input, Error = A::Error>,
+          F: FnMut(A::Output) -> B,
+          Input: Copy
+{
+    type Output = B::Output;
+    type Error = A::Error;
+
+    #[inline(always)]
+    fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
+        match self.0.parse(input, from) {
+            Ok((from, output)) => self.1(output).parse(input, from),
             Err((from, error)) => Err((from, error)),
         }
     }
