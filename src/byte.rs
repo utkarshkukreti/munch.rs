@@ -7,6 +7,7 @@ pub enum Error<'a> {
     Satisfy,
     TakeWhile1,
     Any,
+    Peek,
     Take(usize),
     End,
     Binary(Endianness, Type),
@@ -127,6 +128,23 @@ impl<'a> Parser<&'a [u8]> for Any {
             Ok((from + 1, byte))
         } else {
             Err((from, Error::Any))
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct Peek;
+
+impl<'a> Parser<&'a [u8]> for Peek {
+    type Output = u8;
+    type Error = Error<'static>;
+
+    #[inline(always)]
+    fn parse(&mut self, input: &'a [u8], from: usize) -> Result<Self::Output, Self::Error> {
+        if let Some(&byte) = input.get(from) {
+            Ok((from, byte))
+        } else {
+            Err((from, Error::Peek))
         }
     }
 }

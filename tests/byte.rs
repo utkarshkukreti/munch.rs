@@ -110,6 +110,17 @@ fn any() {
 }
 
 #[test]
+fn peek() {
+    tb! {
+        Peek => {
+            b"" => Err((0, Error::Peek)),
+            b"p" => Ok((0, b'p')),
+            b"pr" => Ok((0, b'p')),
+        },
+    }
+}
+
+#[test]
 fn take() {
     tb! {
         Take(0) => {
