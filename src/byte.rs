@@ -7,6 +7,7 @@ pub enum Error<'a> {
     Satisfy,
     TakeWhile1,
     Any,
+    Take(usize),
     End,
     Binary(Endianness, Type),
 }
@@ -126,6 +127,24 @@ impl<'a> Parser<&'a [u8]> for Any {
             Ok((from + 1, byte))
         } else {
             Err((from, Error::Any))
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct Take(pub usize);
+
+impl<'a> Parser<&'a [u8]> for Take {
+    type Output = &'a [u8];
+    type Error = Error<'static>;
+
+    #[inline(always)]
+    fn parse(&mut self, input: &'a [u8], from: usize) -> Result<Self::Output, Self::Error> {
+        let to = from + self.0;
+        if to <= input.len() {
+            Ok((to, &input[from..to]))
+        } else {
+            Err((from, Error::Take(self.0)))
         }
     }
 }

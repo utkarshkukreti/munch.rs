@@ -110,6 +110,23 @@ fn any() {
 }
 
 #[test]
+fn take() {
+    tb! {
+        Take(0) => {
+            b"" => Ok((0, b"".as_ref())),
+            b"p" => Ok((0, b"".as_ref())),
+            b"pr" => Ok((0, b"".as_ref())),
+        },
+        Take(2) => {
+            b"" => Err((0, Error::Take(2))),
+            b"p" => Err((0, Error::Take(2))),
+            b"pr" => Ok((2, b"pr".as_ref())),
+            b"pr2" => Ok((2, b"pr".as_ref())),
+        },
+    }
+}
+
+#[test]
 fn end() {
     tb! {
         End => {
