@@ -68,4 +68,37 @@ fn mac() {
             "πr²" => Ok((5, 3)),
         },
     }
+
+    let mut json = muncher! {
+        next <- Peek,
+        value <- @match (next) {
+            'n' => "null",
+            'f' => "false",
+            't' => "true",
+            '0' ... '9' => TakeWhile1(|ch| ch.is_digit(10)),
+            _ => |_, from| Err((from, munch::str::Error::Satisfy)),
+        },
+        End,
+        (Ok(value))
+    };
+
+    t! {
+        json => {
+            "n" => Err((0, munch::str::Error::Str("null"))),
+            "nu" => Err((0, munch::str::Error::Str("null"))),
+            "nul" => Err((0, munch::str::Error::Str("null"))),
+            "null" => Ok((4, "null")),
+            "null." => Err((4, munch::str::Error::End)),
+            "f" => Err((0, munch::str::Error::Str("false"))),
+            "false" => Ok((5, "false")),
+            "false." => Err((5, munch::str::Error::End)),
+            "t" => Err((0, munch::str::Error::Str("true"))),
+            "true" => Ok((4, "true")),
+            "true." => Err((4, munch::str::Error::End)),
+            "0" => Ok((1, "0")),
+            "0123" => Ok((4, "0123")),
+            "0123." => Err((4, munch::str::Error::End)),
+            "π" => Err((0, munch::str::Error::Satisfy)),
+        },
+    }
 }
