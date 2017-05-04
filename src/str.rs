@@ -8,6 +8,7 @@ pub enum Error<'a> {
     Satisfy,
     TakeWhile1,
     Any,
+    Peek,
     End,
 }
 
@@ -132,6 +133,23 @@ impl<'a> Parser<&'a str> for Any {
             Ok((from + char.len_utf8(), char))
         } else {
             Err((from, Error::Any))
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct Peek;
+
+impl<'a> Parser<&'a str> for Peek {
+    type Output = char;
+    type Error = Error<'static>;
+
+    #[inline(always)]
+    fn parse(&mut self, input: &'a str, from: usize) -> Result<Self::Output, Self::Error> {
+        if let Some(char) = input[from..].chars().next() {
+            Ok((from, char))
+        } else {
+            Err((from, Error::Peek))
         }
     }
 }

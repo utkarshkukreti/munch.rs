@@ -92,6 +92,17 @@ fn any() {
 }
 
 #[test]
+fn peek() {
+    t! {
+        Peek => {
+            "" => Err((0, Error::Peek)),
+            "π" => Ok((0, 'π')),
+            "πr" => Ok((0, 'π')),
+        },
+    }
+}
+
+#[test]
 fn end() {
     t! {
         End => {
