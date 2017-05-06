@@ -10,7 +10,7 @@ pub enum Error<'a> {
     Peek,
     Take(usize),
     End,
-    Binary(Endianness, Type),
+    Binary(Endianness, BinaryType),
 }
 
 impl<'a> Parser<&'a [u8]> for u8 {
@@ -192,7 +192,7 @@ pub enum Endianness {
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 #[allow(non_camel_case_types)]
-pub enum Type {
+pub enum BinaryType {
     u8,
     u16,
     u32,
@@ -220,7 +220,7 @@ macro_rules! read {
             }
             Ok(($from + size, data.$method()))
         } else {
-            Err(($from, Error::Binary(Endianness::$endianness, Type::$ty)))
+            Err(($from, Error::Binary(Endianness::$endianness, BinaryType::$ty)))
         }
     }}
 }
@@ -273,7 +273,7 @@ impl LittleEndian {
         // Unsafe code adapted from:
         // https://github.com/BurntSushi/byteorder/blob/f8e7685b3a81/src/lib.rs#L517
         Self::u32.map(|u32| unsafe { ::std::mem::transmute::<u32, f32>(u32) })
-            .map_err(|_| Error::Binary(Endianness::Little, Type::f32))
+            .map_err(|_| Error::Binary(Endianness::Little, BinaryType::f32))
             .parse(input, from)
     }
 
@@ -282,7 +282,7 @@ impl LittleEndian {
         // Unsafe code adapted from:
         // https://github.com/BurntSushi/byteorder/blob/f8e7685b3a81/src/lib.rs#L540
         Self::u64.map(|u64| unsafe { ::std::mem::transmute::<u64, f64>(u64) })
-            .map_err(|_| Error::Binary(Endianness::Little, Type::f64))
+            .map_err(|_| Error::Binary(Endianness::Little, BinaryType::f64))
             .parse(input, from)
     }
 }
@@ -335,7 +335,7 @@ impl BigEndian {
         // Unsafe code adapted from:
         // https://github.com/BurntSushi/byteorder/blob/f8e7685b3a81/src/lib.rs#L517
         Self::u32.map(|u32| unsafe { ::std::mem::transmute::<u32, f32>(u32) })
-            .map_err(|_| Error::Binary(Endianness::Big, Type::f32))
+            .map_err(|_| Error::Binary(Endianness::Big, BinaryType::f32))
             .parse(input, from)
     }
 
@@ -344,7 +344,7 @@ impl BigEndian {
         // Unsafe code adapted from:
         // https://github.com/BurntSushi/byteorder/blob/f8e7685b3a81/src/lib.rs#L540
         Self::u64.map(|u64| unsafe { ::std::mem::transmute::<u64, f64>(u64) })
-            .map_err(|_| Error::Binary(Endianness::Big, Type::f64))
+            .map_err(|_| Error::Binary(Endianness::Big, BinaryType::f64))
             .parse(input, from)
     }
 }
