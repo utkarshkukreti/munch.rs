@@ -317,6 +317,39 @@ fn bind() {
 }
 
 #[test]
+fn guard() {
+    #[derive(Debug, PartialEq)]
+    enum Error {
+        NotANumber,
+        Huge,
+        Negative,
+        Odd,
+    }
+
+    let mut parser = muncher! {
+        str <- Capture((Optional('-'), TakeWhile1(|ch| ch.is_digit(10))))
+            .map_err(|_| Error::NotANumber),
+        let n = str.parse().unwrap(),
+        Guard(|| n <= 255, || Error::Huge),
+        Guard(|| n >= 0, || Error::Negative),
+        Guard(|| n % 2 == 0, || Error::Odd),
+        (Ok(n))
+    };
+
+    t! {
+        parser => {
+            "0" => Ok((1, 0)),
+            "12" => Ok((2, 12)),
+            "124" => Ok((3, 124)),
+            "abc" => Err((0, Error::NotANumber)),
+            "1234" => Err((4, Error::Huge)),
+            "-12" => Err((3, Error::Negative)),
+            "123" => Err((3, Error::Odd)),
+        },
+    }
+}
+
+#[test]
 fn repeat() {
     fn t<R: Range>(range: R) {
         use std::cmp::Ordering::*;

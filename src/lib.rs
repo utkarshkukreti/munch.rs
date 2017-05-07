@@ -398,6 +398,26 @@ impl<A, B, F, Input> Parser<Input> for Bind<A, F>
     }
 }
 
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct Guard<F, E>(pub F, pub E);
+
+impl<F, E, Input, Error> Parser<Input> for Guard<F, E>
+    where F: FnMut() -> bool,
+          E: FnMut() -> Error
+{
+    type Output = ();
+    type Error = Error;
+
+    #[inline(always)]
+    fn parse(&mut self, _input: Input, from: usize) -> Result<Self::Output, Self::Error> {
+        if self.0() {
+            Ok((from, ()))
+        } else {
+            Err((from, self.1()))
+        }
+    }
+}
+
 pub trait Range: Clone {
     #[inline(always)]
     fn min(&self) -> usize;
