@@ -445,6 +445,21 @@ pub fn Succeed<F, E>(f: F) -> Succeed<F, E> {
     }
 }
 
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct Fail<F>(pub F);
+
+impl<F, Input, Error> Parser<Input> for Fail<F>
+    where F: FnMut() -> Error
+{
+    type Output = ();
+    type Error = Error;
+
+    #[inline(always)]
+    fn parse(&mut self, _input: Input, from: usize) -> Result<Self::Output, Self::Error> {
+        Err((from, self.0()))
+    }
+}
+
 pub trait Range: Clone {
     #[inline(always)]
     fn min(&self) -> usize;

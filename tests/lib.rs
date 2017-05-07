@@ -360,6 +360,16 @@ fn succeed() {
 }
 
 #[test]
+fn fail() {
+    t! {
+        Fail(|| '✗') => {
+            "" => Err((0, '✗')),
+            "π" => Err((0, '✗')),
+        },
+    }
+}
+
+#[test]
 fn repeat() {
     fn t<R: Range>(range: R) {
         use std::cmp::Ordering::*;
