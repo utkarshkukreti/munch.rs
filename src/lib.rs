@@ -418,6 +418,33 @@ impl<F, E, Input, Error> Parser<Input> for Guard<F, E>
     }
 }
 
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct Succeed<F, E> {
+    f: F,
+    e: std::marker::PhantomData<E>,
+}
+
+impl<F, E, Input, Output> Parser<Input> for Succeed<F, E>
+    where F: FnMut() -> Output
+{
+    type Output = Output;
+    type Error = E;
+
+    #[inline(always)]
+    fn parse(&mut self, _input: Input, from: usize) -> Result<Self::Output, Self::Error> {
+        Ok((from, (self.f)()))
+    }
+}
+
+#[allow(non_snake_case)]
+#[inline(always)]
+pub fn Succeed<F, E>(f: F) -> Succeed<F, E> {
+    Succeed {
+        f: f,
+        e: std::marker::PhantomData,
+    }
+}
+
 pub trait Range: Clone {
     #[inline(always)]
     fn min(&self) -> usize;

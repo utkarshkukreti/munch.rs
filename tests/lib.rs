@@ -350,6 +350,16 @@ fn guard() {
 }
 
 #[test]
+fn succeed() {
+    t! {
+        Succeed::<_, ()>(|| '✓') => {
+            "" => Ok((0, '✓')),
+            "π" => Ok((0, '✓')),
+        },
+    }
+}
+
+#[test]
 fn repeat() {
     fn t<R: Range>(range: R) {
         use std::cmp::Ordering::*;
