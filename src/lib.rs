@@ -170,6 +170,21 @@ impl<A, B> std::ops::Shr<B> for P<A> {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
+pub struct Pack<F, A>(pub F, pub A);
+
+impl<F, A, Input, Output, Error> Parser<Input> for Pack<F, A>
+    where F: FnMut(Input, usize, &A) -> Result<Output, Error>
+{
+    type Output = Output;
+    type Error = Error;
+
+    #[inline(always)]
+    fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
+        self.0(input, from, &self.1)
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct And<A, B>(pub A, pub B);
 
 impl<A, B, Input> Parser<Input> for And<A, B>

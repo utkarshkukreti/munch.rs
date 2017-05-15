@@ -66,6 +66,47 @@ fn p() {
 }
 
 #[test]
+fn pack() {
+    #[derive(Debug, PartialEq)]
+    enum Error {
+        Low,
+        High,
+        NotANumber,
+    }
+
+    let number = |input, from, &(min, max): &(u32, u32)| {
+        TakeWhile1(|ch| ch.is_digit(10))
+            .map_err(|_| Error::NotANumber)
+            .and_then(|str| match str.parse() {
+                Ok(number) => {
+                    if number < min {
+                        Err(Error::Low)
+                    } else if number > max {
+                        Err(Error::High)
+                    } else {
+                        Ok(number)
+                    }
+                }
+                Err(_) => Err(Error::NotANumber),
+            })
+            .parse(input, from)
+    };
+
+    t! {
+        Pack(&number, (10, 100)) => {
+            "" => Err((0, Error::NotANumber)),
+            "π" => Err((0, Error::NotANumber)),
+            "9" => Err((1, Error::Low)),
+            "10" => Ok((2, 10)),
+            "55" => Ok((2, 55)),
+            "100" => Ok((3, 100)),
+            "101" => Err((3, Error::High)),
+            "4294967296" => Err((10, Error::NotANumber)),
+        },
+    }
+}
+
+#[test]
 fn and() {
     t! {
         'π'.and('r').and('²') => {
