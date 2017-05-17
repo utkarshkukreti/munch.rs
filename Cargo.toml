@@ -1,6 +1,6 @@
 [package]
 name = "munch"
-version = "0.5.0"
+version = "0.5.1"
 authors = ["Utkarsh Kukreti <utkarshkukreti@gmail.com>"]
 
 description = "Blazing fast, zero-copy parser combinator library with an elegant API for both strings and bytes."
