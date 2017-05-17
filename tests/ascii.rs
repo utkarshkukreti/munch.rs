@@ -1,6 +1,7 @@
 extern crate munch;
 
 use munch::ascii::*;
+use munch::error::*;
 use munch::str;
 
 #[macro_use]
@@ -17,7 +18,7 @@ fn is_alphabetic(u8: u8) -> bool {
 fn satisfy() {
     t! {
         Satisfy(|u8| u8 == b'p') => {
-            "" => Err((0, str::Error::Ascii(Error::Satisfy))),
+            "" => Err((0, Error::Ascii(Ascii::Satisfy))),
             "p" => Ok((1, b'p')),
             "pr" => Ok((1, b'p')),
             "pr²" => Ok((1, b'p')),
@@ -26,7 +27,7 @@ fn satisfy() {
             "\x7F" => Ok((1, 0x7F)),
         },
         Satisfy(|u8| u8 == "π".as_bytes()[0]) => {
-            "π" => Err((0, str::Error::Ascii(Error::Satisfy))),
+            "π" => Err((0, Error::Ascii(Ascii::Satisfy))),
         },
     }
 }
@@ -55,7 +56,7 @@ fn take_while() {
 fn take_while1() {
     t! {
         TakeWhile1(is_alphabetic) => {
-            "" => Err((0, str::Error::Ascii(Error::TakeWhile1))),
+            "" => Err((0, Error::Ascii(Ascii::TakeWhile1))),
             "p" => Ok((1, "p")),
             "pr" => Ok((2, "pr")),
             "pr2" => Ok((2, "pr")),
@@ -66,7 +67,7 @@ fn take_while1() {
             "\x7F\x7F" => Ok((2, "\x7F\x7F")),
         },
         TakeWhile1(|u8| u8 == "π".as_bytes()[0]) => {
-            "π" => Err((0, str::Error::Ascii(Error::TakeWhile1))),
+            "π" => Err((0, Error::Ascii(Ascii::TakeWhile1))),
         },
     }
 }

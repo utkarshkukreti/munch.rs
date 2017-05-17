@@ -11,7 +11,7 @@ mod t;
 fn mac() {
     #[derive(Debug, PartialEq)]
     enum Error {
-        Munch(munch::str::Error<'static>),
+        Munch(munch::error::Error<'static>),
         ParseIntError(std::num::ParseIntError),
         AllEqual(u8),
     }
@@ -41,12 +41,12 @@ fn mac() {
 
     t! {
         ip => {
-            "" => Err((0, Error::Munch(munch::str::Error::TakeWhile1))),
-            "a" => Err((0, Error::Munch(munch::str::Error::TakeWhile1))),
-            "1" => Err((1, Error::Munch(munch::str::Error::Char('.')))),
-            "1." => Err((2, Error::Munch(munch::str::Error::TakeWhile1))),
-            "1.2" => Err((3, Error::Munch(munch::str::Error::Satisfy))),
-            "1.2." => Err((4, Error::Munch(munch::str::Error::TakeWhile1))),
+            "" => Err((0, Error::Munch(munch::error::Error::TakeWhile1))),
+            "a" => Err((0, Error::Munch(munch::error::Error::TakeWhile1))),
+            "1" => Err((1, Error::Munch(munch::error::Error::Char('.')))),
+            "1." => Err((2, Error::Munch(munch::error::Error::TakeWhile1))),
+            "1.2" => Err((3, Error::Munch(munch::error::Error::Satisfy))),
+            "1.2." => Err((4, Error::Munch(munch::error::Error::TakeWhile1))),
             "1.2.3.4" => Ok((7, Ip(1, 2, 4, 4))),
             "256" => Err((3, Error::ParseIntError("256".parse::<u8>().err().unwrap()))),
             "1.2.3.256" => Err((9, Error::ParseIntError("256".parse::<u8>().err().unwrap()))),
@@ -62,7 +62,7 @@ fn mac() {
 
     t! {
         count => {
-            "" => Err((0, munch::str::Error::Any)),
+            "" => Err((0, munch::error::Error::Any)),
             "π" => Ok((2, 1)),
             "πr" => Ok((3, 2)),
             "πr²" => Ok((5, 3)),
@@ -76,7 +76,7 @@ fn mac() {
             'f' => "false",
             't' => "true",
             '0' | '1' | '2' ... '9' => TakeWhile1(|ch| ch.is_digit(10)),
-            _ => |_, from| Err((from, munch::str::Error::Satisfy)),
+            _ => |_, from| Err((from, munch::error::Error::Satisfy)),
         },
         End,
         (Ok(value))
@@ -84,21 +84,21 @@ fn mac() {
 
     t! {
         json => {
-            "n" => Err((0, munch::str::Error::Str("null"))),
-            "nu" => Err((0, munch::str::Error::Str("null"))),
-            "nul" => Err((0, munch::str::Error::Str("null"))),
+            "n" => Err((0, munch::error::Error::Str("null"))),
+            "nu" => Err((0, munch::error::Error::Str("null"))),
+            "nul" => Err((0, munch::error::Error::Str("null"))),
             "null" => Ok((4, "null")),
-            "null." => Err((4, munch::str::Error::End)),
-            "f" => Err((0, munch::str::Error::Str("false"))),
+            "null." => Err((4, munch::error::Error::End)),
+            "f" => Err((0, munch::error::Error::Str("false"))),
             "false" => Ok((5, "false")),
-            "false." => Err((5, munch::str::Error::End)),
-            "t" => Err((0, munch::str::Error::Str("true"))),
+            "false." => Err((5, munch::error::Error::End)),
+            "t" => Err((0, munch::error::Error::Str("true"))),
             "true" => Ok((4, "true")),
-            "true." => Err((4, munch::str::Error::End)),
+            "true." => Err((4, munch::error::Error::End)),
             "0" => Ok((1, "0")),
             "0123" => Ok((4, "0123")),
-            "0123." => Err((4, munch::str::Error::End)),
-            "π" => Err((0, munch::str::Error::Satisfy)),
+            "0123." => Err((4, munch::error::Error::End)),
+            "π" => Err((0, munch::error::Error::Satisfy)),
         },
     }
 }

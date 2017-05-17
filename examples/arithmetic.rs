@@ -2,7 +2,7 @@ extern crate munch;
 
 use munch::{Optional, P, Parser};
 
-pub fn expr(str: &str, from: usize) -> munch::Result<i64, munch::str::Error<'static>> {
+pub fn expr(str: &str, from: usize) -> munch::Result<i64, munch::error::Error<'static>> {
     use munch::str::*;
 
     let ws = P(TakeWhile(char::is_whitespace));
@@ -30,7 +30,7 @@ pub fn expr(str: &str, from: usize) -> munch::Result<i64, munch::str::Error<'sta
         .parse(str, from)
 }
 
-pub fn parse(str: &str) -> Result<i64, (usize, munch::str::Error<'static>)> {
+pub fn parse(str: &str) -> Result<i64, (usize, munch::error::Error<'static>)> {
     use munch::str::*;
 
     let ws = P(TakeWhile(char::is_whitespace));

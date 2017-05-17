@@ -21,7 +21,7 @@ pub enum Value<'a> {
     Vector(Vec<Value<'a>>),
 }
 
-pub fn value(str: &str, from: usize) -> munch::Result<Value, munch::str::Error<'static>> {
+pub fn value(str: &str, from: usize) -> munch::Result<Value, munch::error::Error<'static>> {
     use munch::str::*;
 
     let ws = || P(TakeWhile(char::is_whitespace));
@@ -49,7 +49,7 @@ pub fn value(str: &str, from: usize) -> munch::Result<Value, munch::str::Error<'
     ((integer | symbol | list | vector) << ws()).parse(str, from)
 }
 
-pub fn parse(str: &str) -> Result<Vec<Value>, (usize, munch::str::Error<'static>)> {
+pub fn parse(str: &str) -> Result<Vec<Value>, (usize, munch::error::Error<'static>)> {
     use munch::str::*;
     match (P(TakeWhile(char::is_whitespace)) >> value.repeat(..) << End).parse(str, 0) {
         Ok((_, output)) => Ok(output),

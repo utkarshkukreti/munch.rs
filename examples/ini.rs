@@ -6,7 +6,7 @@ use munch::{Optional, P, Parser};
 
 pub type Value<'a> = HashMap<&'a str, HashMap<&'a str, &'a str>>;
 
-pub fn parse(str: &str) -> Result<Value, (usize, munch::str::Error<'static>)> {
+pub fn parse(str: &str) -> Result<Value, (usize, munch::error::Error<'static>)> {
     use munch::str::*;
 
     let s = || P(TakeWhile(|ch| ch == ' ' || ch == '\t'));

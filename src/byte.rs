@@ -1,17 +1,5 @@
 use {Parser, Result};
-
-#[derive(Copy, Clone, Debug, PartialEq)]
-pub enum Error<'a> {
-    Byte(u8),
-    Bytes(&'a [u8]),
-    Satisfy,
-    TakeWhile1,
-    Any,
-    Peek,
-    Take(usize),
-    End,
-    Binary(Endianness, BinaryType),
-}
+use error::{Error, Endianness, BinaryType};
 
 impl<'a> Parser<&'a [u8]> for u8 {
     type Output = u8;
@@ -182,27 +170,6 @@ impl<'a> Parser<&'a [u8]> for End {
             Err((from, Error::End))
         }
     }
-}
-
-#[derive(Copy, Clone, Debug, PartialEq)]
-pub enum Endianness {
-    Little,
-    Big,
-}
-
-#[derive(Copy, Clone, Debug, PartialEq)]
-#[allow(non_camel_case_types)]
-pub enum BinaryType {
-    u8,
-    u16,
-    u32,
-    u64,
-    i8,
-    i16,
-    i32,
-    i64,
-    f32,
-    f64,
 }
 
 macro_rules! read {

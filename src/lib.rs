@@ -3,6 +3,7 @@ mod mac;
 pub mod byte;
 pub mod ascii;
 pub mod str;
+pub mod error;
 
 pub type Result<Output, Error> = std::result::Result<(usize, Output), (usize, Error)>;
 

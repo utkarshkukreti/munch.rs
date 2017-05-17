@@ -1,16 +1,5 @@
-use {Parser, Result, ascii};
-
-#[derive(Copy, Clone, Debug, PartialEq)]
-pub enum Error<'a> {
-    Ascii(ascii::Error),
-    Char(char),
-    Str(&'a str),
-    Satisfy,
-    TakeWhile1,
-    Any,
-    Peek,
-    End,
-}
+use {Parser, Result};
+use error::Error;
 
 impl<'a> Parser<&'a str> for char {
     type Output = char;

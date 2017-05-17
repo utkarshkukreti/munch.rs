@@ -1,5 +1,6 @@
 extern crate munch;
 
+use munch::error::Error;
 use munch::str::*;
 
 #[macro_use]
