@@ -75,7 +75,7 @@ fn mac() {
             'n' => "null",
             'f' => "false",
             't' => "true",
-            '0' ... '9' => TakeWhile1(|ch| ch.is_digit(10)),
+            '0' | '1' | '2' ... '9' => TakeWhile1(|ch| ch.is_digit(10)),
             _ => |_, from| Err((from, munch::str::Error::Satisfy)),
         },
         End,

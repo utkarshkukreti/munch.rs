@@ -11,10 +11,10 @@ macro_rules! muncher {
         }
     };
     (@internal $input:ident $from:ident $ident:ident <- @match ($expr:expr) {
-        $($pat:pat => $parser:expr,)+
+        $($($pat:pat)|+ => $parser:expr,)+
     }, $($tt:tt)+) => {{
         let ($from, $ident) = match $expr {
-            $($pat => $crate::Parser::parse(&mut $parser, $input, $from)?,)+
+            $($($pat)|+ => $crate::Parser::parse(&mut $parser, $input, $from)?,)+
         };
         muncher!(@internal $input $from $($tt)+)
     }};
