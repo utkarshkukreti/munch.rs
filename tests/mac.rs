@@ -25,12 +25,12 @@ fn mac() {
 
     let mut ip = muncher! {
         a <- u8,
-        P('.').map_err(Error::Munch),
+        '.'.map_err(Error::Munch),
         b <- |input, from| u8.parse(input, from),
         Satisfy(|ch| ch == '.').map_err(Error::Munch),
         c <- u8,
         let c = c + 1,
-        P('.').map_err(Error::Munch),
+        '.'.map_err(Error::Munch),
         d <- u8,
         (if a == b && b == c && c == d {
             Err(Error::AllEqual(a))

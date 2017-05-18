@@ -10,7 +10,7 @@ macro_rules! muncher {
             Err(error) => Err(($from, error)),
         }
     };
-    (@internal $input:ident $from:ident $ident:ident <- @match ($expr:expr) {
+    (@internal $input:ident $from:ident $ident:tt <- @match ($expr:expr) {
         $($($pat:pat)|+ => $parser:expr,)+
     }, $($tt:tt)+) => {{
         let ($from, $ident) = match $expr {
@@ -18,7 +18,7 @@ macro_rules! muncher {
         };
         muncher!(@internal $input $from $($tt)+)
     }};
-    (@internal $input:ident $from:ident $ident:ident <- $parser:expr, $($tt:tt)+) => {{
+    (@internal $input:ident $from:ident $ident:tt <- $parser:expr, $($tt:tt)+) => {{
         let ($from, $ident) = $crate::Parser::parse(&mut $parser, $input, $from)?;
         muncher!(@internal $input $from $($tt)+)
     }};
