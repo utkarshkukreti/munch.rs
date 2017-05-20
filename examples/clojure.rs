@@ -24,7 +24,7 @@ pub enum Value<'a> {
 pub fn value(str: &str, from: usize) -> munch::Result<Value, munch::error::Error<'static>> {
     use munch::str::*;
 
-    let ws = || TakeWhile(char::is_whitespace);
+    let ws = TakeWhile(char::is_whitespace);
 
     let integer = Capture(Try((Optional('-'.or('+')), TakeWhile1(|ch| ch.is_digit(10)))))
         .map(|str| Value::Integer(str.parse().unwrap()));
@@ -43,10 +43,10 @@ pub fn value(str: &str, from: usize) -> munch::Result<Value, munch::error::Error
     };
     let symbol = Capture((Satisfy(&is_symbol_head), TakeWhile(is_symbol_tail))).map(Value::Symbol);
 
-    let list = '('.p() >> ws() >> value.repeat(..).map(Value::List) << ')';
-    let vector = '['.p() >> ws() >> value.repeat(..).map(Value::Vector) << ']';
+    let list = '('.p() >> ws >> value.repeat(..).map(Value::List) << ')';
+    let vector = '['.p() >> ws >> value.repeat(..).map(Value::Vector) << ']';
 
-    ((integer | symbol | list | vector) << ws()).parse(str, from)
+    ((integer | symbol | list | vector) << ws).parse(str, from)
 }
 
 pub fn parse(str: &str) -> Result<Vec<Value>, (usize, munch::error::Error<'static>)> {
