@@ -1,6 +1,6 @@
 extern crate munch;
 
-use munch::{Optional, P, Parser, Try};
+use munch::{Optional, Parser, Try};
 
 pub static EXAMPLE: &'static str = "
 (defn sum [xs]
@@ -24,10 +24,10 @@ pub enum Value<'a> {
 pub fn value(str: &str, from: usize) -> munch::Result<Value, munch::error::Error<'static>> {
     use munch::str::*;
 
-    let ws = || P(TakeWhile(char::is_whitespace));
+    let ws = || TakeWhile(char::is_whitespace);
 
-    let integer = P(Capture(Try((Optional('-'.or('+')), TakeWhile1(|ch| ch.is_digit(10)))))
-        .map(|str| Value::Integer(str.parse().unwrap())));
+    let integer = Capture(Try((Optional('-'.or('+')), TakeWhile1(|ch| ch.is_digit(10)))))
+        .map(|str| Value::Integer(str.parse().unwrap()));
 
     let is_symbol_head = |ch| match ch {
         'a'...'z' | 'A'...'Z' | '.' | '*' | '+' | '!' | '-' | '_' | '?' | '$' | '%' | '&' |
@@ -43,15 +43,15 @@ pub fn value(str: &str, from: usize) -> munch::Result<Value, munch::error::Error
     };
     let symbol = Capture((Satisfy(&is_symbol_head), TakeWhile(is_symbol_tail))).map(Value::Symbol);
 
-    let list = P('(') >> ws() >> P(value).repeat(..).map(Value::List) << P(')');
-    let vector = P('[') >> ws() >> P(value).repeat(..).map(Value::Vector) << P(']');
+    let list = '('.p() >> ws() >> value.repeat(..).map(Value::List) << ')';
+    let vector = '['.p() >> ws() >> value.repeat(..).map(Value::Vector) << ']';
 
     ((integer | symbol | list | vector) << ws()).parse(str, from)
 }
 
 pub fn parse(str: &str) -> Result<Vec<Value>, (usize, munch::error::Error<'static>)> {
     use munch::str::*;
-    match (P(TakeWhile(char::is_whitespace)) >> value.repeat(..) << End).parse(str, 0) {
+    match (TakeWhile(char::is_whitespace).p() >> value.repeat(..) << End).parse(str, 0) {
         Ok((_, output)) => Ok(output),
         Err((from, error)) => Err((from, error)),
     }

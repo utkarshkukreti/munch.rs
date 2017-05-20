@@ -2,30 +2,30 @@ extern crate munch;
 
 use std::collections::HashMap;
 
-use munch::{Optional, P, Parser};
+use munch::{Optional, Parser};
 
 pub type Value<'a> = HashMap<&'a str, HashMap<&'a str, &'a str>>;
 
 pub fn parse(str: &str) -> Result<Value, (usize, munch::error::Error<'static>)> {
     use munch::str::*;
 
-    let s = || P(TakeWhile(|ch| ch == ' ' || ch == '\t'));
-    let ws = || P(TakeWhile(char::is_whitespace));
+    let s = || TakeWhile(|ch| ch == ' ' || ch == '\t');
+    let ws = || TakeWhile(char::is_whitespace);
 
-    let header = P('[') >> TakeWhile1(|ch| ch != ']') << ']' << ws();
+    let header = '['.p() >> TakeWhile1(|ch| ch != ']') << ']' << ws();
 
-    let comment = P(';') >> TakeWhile(|ch| ch != '\n') << ws();
+    let comment = ';'.p() >> TakeWhile(|ch| ch != '\n') << ws();
 
-    let key = P(TakeWhile1(char::is_alphanumeric));
-    let value = P(TakeWhile(|ch| ch != '\n' && ch != ';'));
+    let key = TakeWhile1(char::is_alphanumeric);
+    let value = TakeWhile(|ch| ch != '\n' && ch != ';');
 
-    let kv = (key << s() << '=' << s(), value << s() << Optional(comment) << ws());
+    let kv = (key.p() << s() << '=' << s(), value.p() << s() << Optional(comment) << ws());
     let kvs = kv.repeat(..).collect();
 
     let section = (header, kvs);
     let sections = section.repeat(..).collect();
 
-    (ws() >> sections << End).parse(str, 0).map(|(_, output)| output)
+    (ws().p() >> sections << End).parse(str, 0).map(|(_, output)| output)
 }
 
 pub static EXAMPLE: &'static str = "

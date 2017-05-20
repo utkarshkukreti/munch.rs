@@ -1,16 +1,16 @@
 extern crate munch;
 
-use munch::{Optional, P, Parser};
+use munch::{Optional, Parser};
 
 pub fn expr(str: &str, from: usize) -> munch::Result<i64, munch::error::Error<'static>> {
     use munch::str::*;
 
-    let ws = P(TakeWhile(char::is_whitespace));
+    let ws = TakeWhile(char::is_whitespace);
 
-    let integer = P(Capture((Optional('-'), TakeWhile1(|ch| ch.is_digit(10))))
-        .map(|str| str.parse().unwrap()));
+    let integer = Capture((Optional('-'), TakeWhile1(|ch| ch.is_digit(10))))
+        .map(|str| str.parse().unwrap());
 
-    let factor = (P('(') >> ws >> expr << ws << ')' | integer) << ws;
+    let factor = ('('.p() >> ws >> expr << ws << ')' | integer) << ws;
 
     let term = factor.repeat(1..)
         .join('*'.or('/') << ws)
@@ -33,8 +33,8 @@ pub fn expr(str: &str, from: usize) -> munch::Result<i64, munch::error::Error<'s
 pub fn parse(str: &str) -> Result<i64, (usize, munch::error::Error<'static>)> {
     use munch::str::*;
 
-    let ws = P(TakeWhile(char::is_whitespace));
-    (ws >> expr << ws << End).parse(str, 0).map(|(_, output)| output)
+    let ws = TakeWhile(char::is_whitespace);
+    (ws.p() >> expr << ws << End).parse(str, 0).map(|(_, output)| output)
 }
 
 #[cfg(not(test))]

@@ -473,7 +473,7 @@ fn repeat() {
 fn collect() {
     use std::collections::HashMap;
 
-    let mut p = (P(Any) << ':', Any).repeat(..).collect();
+    let mut p = (Any.p() << ':', Any).repeat(..).collect();
 
     t! {
         p => {
