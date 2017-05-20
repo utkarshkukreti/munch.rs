@@ -14,6 +14,13 @@ pub trait Parser<Input> {
     fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error>;
 
     #[inline(always)]
+    fn p(self) -> P<Self>
+        where Self: Sized
+    {
+        P(self)
+    }
+
+    #[inline(always)]
     fn by_ref(&mut self) -> P<ByRef<Self>>
         where Self: Sized
     {
