@@ -29,3 +29,21 @@ macro_rules! tb {
         })*)*
     }}
 }
+
+#[macro_export]
+macro_rules! t_and_tb {
+    ($($parser:expr => {
+        $($input:expr => $result:expr,)*
+    },)*) => {{
+        t! {
+            $($parser => {
+                $($input => $result,)*
+            },)*
+        }
+        tb! {
+            $($parser => {
+                $($input.as_bytes() => $result,)*
+            },)*
+        }
+    }}
+}

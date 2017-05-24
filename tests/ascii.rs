@@ -16,7 +16,7 @@ fn is_alphabetic(u8: u8) -> bool {
 
 #[test]
 fn satisfy() {
-    t! {
+    t_and_tb! {
         Satisfy(|u8| u8 == b'p') => {
             "" => Err((0, Error::Ascii(Ascii::Satisfy))),
             "p" => Ok((1, b'p')),
@@ -34,7 +34,7 @@ fn satisfy() {
 
 #[test]
 fn take_while() {
-    t! {
+    t_and_tb! {
         TakeWhile(is_alphabetic) => {
             "" => Ok((0, "")),
             "p" => Ok((1, "p")),
@@ -54,7 +54,7 @@ fn take_while() {
 
 #[test]
 fn take_while1() {
-    t! {
+    t_and_tb! {
         TakeWhile1(is_alphabetic) => {
             "" => Err((0, Error::Ascii(Ascii::TakeWhile1))),
             "p" => Ok((1, "p")),
