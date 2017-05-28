@@ -28,7 +28,9 @@ impl<'a, 'tmp> Parser<&'a str> for &'tmp str {
     fn parse(&mut self, input: &'a str, from: usize) -> Result<Self::Output, Self::Error> {
         if input[from..].starts_with(*self) {
             let to = from + self.len();
-            Ok((to, &input[from..to]))
+            // This is safe because the code above guarantees that `from <= to` and both `from` and
+            // `to` lie on a char boundary.
+            Ok((to, unsafe { slice_unchecked(input, from, to) }))
         } else {
             Err((from, Error::Str(*self)))
         }
@@ -71,7 +73,9 @@ impl<'a, F> Parser<&'a str> for TakeWhile<F>
             Some(char) => input.len() - chars.as_str().len() - char.len_utf8(),
             None => input.len(),
         };
-        Ok((to, &input[from..to]))
+        // This is safe because the code above guarantees that `from <= to` and both `from` and
+        // `to` lie on a char boundary.
+        Ok((to, unsafe { slice_unchecked(input, from, to) }))
     }
 }
 
@@ -158,4 +162,15 @@ impl<'a> Parser<&'a str> for End {
             Err((from, Error::End))
         }
     }
+}
+
+/// A wrapper around `str::slice_unchecked` that asserts the invariants `str::slice_unchecked`
+/// expects to be true when Debug Assertions are switched on.
+/// Useful to catch bugs while developing and testing.
+#[inline(always)]
+unsafe fn slice_unchecked(str: &str, from: usize, to: usize) -> &str {
+    debug_assert!(from <= to);
+    debug_assert!(str.is_char_boundary(from));
+    debug_assert!(str.is_char_boundary(to));
+    str.slice_unchecked(from, to)
 }
