@@ -22,11 +22,13 @@ pub enum Value<'a> {
 }
 
 pub fn value(str: &str, from: usize) -> munch::Result<Value, munch::error::Error<'static>> {
+    use munch::ascii;
     use munch::str::*;
 
     let ws = TakeWhile(char::is_whitespace);
 
-    let integer = Capture(Try((Optional('-'.or('+')), TakeWhile1(|ch| ch.is_digit(10)))))
+    let integer = Capture(Try((Optional('-'.or('+')),
+                               ascii::TakeWhile1(|b| b >= b'0' && b <= b'9'))))
         .map(|str| Value::Integer(str.parse().unwrap()));
 
     let is_symbol_head = |ch| match ch {
