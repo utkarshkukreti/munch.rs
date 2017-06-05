@@ -136,7 +136,7 @@ impl<A, Input> Parser<Input> for P<A>
 }
 
 #[derive(Debug, PartialEq)]
-pub struct ByRef<'a, A: 'a>(pub &'a mut A);
+pub struct ByRef<'a, A: 'a>(&'a mut A);
 
 impl<'a, A, Input> Parser<Input> for ByRef<'a, A>
     where A: Parser<Input>
@@ -193,7 +193,7 @@ impl<F, A, Input, Output, Error> Parser<Input> for Pack<F, A>
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct And<A, B>(pub A, pub B);
+pub struct And<A, B>(A, B);
 
 impl<A, B, Input> Parser<Input> for And<A, B>
     where A: Parser<Input>,
@@ -212,7 +212,7 @@ impl<A, B, Input> Parser<Input> for And<A, B>
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct AndSkip<A, B>(pub A, pub B);
+pub struct AndSkip<A, B>(A, B);
 
 impl<A, B, Input> Parser<Input> for AndSkip<A, B>
     where A: Parser<Input>,
@@ -231,7 +231,7 @@ impl<A, B, Input> Parser<Input> for AndSkip<A, B>
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct SkipAnd<A, B>(pub A, pub B);
+pub struct SkipAnd<A, B>(A, B);
 
 impl<A, B, Input> Parser<Input> for SkipAnd<A, B>
     where A: Parser<Input>,
@@ -249,7 +249,7 @@ impl<A, B, Input> Parser<Input> for SkipAnd<A, B>
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Or<A, B>(pub A, pub B);
+pub struct Or<A, B>(A, B);
 
 impl<A, B, Input> Parser<Input> for Or<A, B>
     where A: Parser<Input>,
@@ -290,7 +290,7 @@ impl<A, Input> Parser<Input> for Try<A>
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Map<A, F>(pub A, pub F);
+pub struct Map<A, F>(A, F);
 
 impl<A, F, Input, Output> Parser<Input> for Map<A, F>
     where A: Parser<Input>,
@@ -308,7 +308,7 @@ impl<A, F, Input, Output> Parser<Input> for Map<A, F>
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct MapErr<A, F>(pub A, pub F);
+pub struct MapErr<A, F>(A, F);
 
 impl<A, F, Input, Error> Parser<Input> for MapErr<A, F>
     where A: Parser<Input>,
@@ -363,7 +363,7 @@ tuple_impl! {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct AndThen<A, F>(pub A, pub F);
+pub struct AndThen<A, F>(A, F);
 
 impl<A, F, Input, Output> Parser<Input> for AndThen<A, F>
     where A: Parser<Input>,
@@ -401,7 +401,7 @@ impl<A, Input> Parser<Input> for Optional<A>
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Bind<A, F>(pub A, pub F);
+pub struct Bind<A, F>(A, F);
 
 impl<A, B, F, Input> Parser<Input> for Bind<A, F>
     where A: Parser<Input>,
