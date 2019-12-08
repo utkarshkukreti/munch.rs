@@ -1,4 +1,4 @@
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Error<'a> {
     Any,
     Ascii(Ascii),
@@ -12,6 +12,7 @@ pub enum Error<'a> {
     Str(&'a str),
     Take(usize),
     TakeWhile1,
+    Message(Box<str>),
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -39,4 +40,8 @@ pub enum BinaryType {
 pub enum Ascii {
     Satisfy,
     TakeWhile1,
+}
+
+pub fn message<'a>(message: impl Into<String>) -> Error<'a> {
+    Error::Message(message.into().into_boxed_str())
 }
