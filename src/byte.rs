@@ -191,7 +191,7 @@ macro_rules! read {
         if $input.len() >= $from + size {
             unsafe {
                 ::std::ptr::copy_nonoverlapping(
-                    $input.as_ptr().offset($from as isize),
+                    $input.as_ptr().add($from),
                     &mut data as *mut $ty as *mut u8,
                     size,
                 );
@@ -251,20 +251,16 @@ impl LittleEndian {
 
     #[inline(always)]
     pub fn f32(input: &[u8], from: usize) -> Result<f32, Error<'static>> {
-        // Unsafe code adapted from:
-        // https://github.com/BurntSushi/byteorder/blob/f8e7685b3a81/src/lib.rs#L517
         Self::u32
-            .map(|u32| unsafe { ::std::mem::transmute::<u32, f32>(u32) })
+            .map(f32::from_bits)
             .map_err(|_| Error::Binary(Endianness::Little, BinaryType::f32))
             .parse(input, from)
     }
 
     #[inline(always)]
     pub fn f64(input: &[u8], from: usize) -> Result<f64, Error<'static>> {
-        // Unsafe code adapted from:
-        // https://github.com/BurntSushi/byteorder/blob/f8e7685b3a81/src/lib.rs#L540
         Self::u64
-            .map(|u64| unsafe { ::std::mem::transmute::<u64, f64>(u64) })
+            .map(f64::from_bits)
             .map_err(|_| Error::Binary(Endianness::Little, BinaryType::f64))
             .parse(input, from)
     }
@@ -315,20 +311,16 @@ impl BigEndian {
 
     #[inline(always)]
     pub fn f32(input: &[u8], from: usize) -> Result<f32, Error<'static>> {
-        // Unsafe code adapted from:
-        // https://github.com/BurntSushi/byteorder/blob/f8e7685b3a81/src/lib.rs#L517
         Self::u32
-            .map(|u32| unsafe { ::std::mem::transmute::<u32, f32>(u32) })
+            .map(f32::from_bits)
             .map_err(|_| Error::Binary(Endianness::Big, BinaryType::f32))
             .parse(input, from)
     }
 
     #[inline(always)]
     pub fn f64(input: &[u8], from: usize) -> Result<f64, Error<'static>> {
-        // Unsafe code adapted from:
-        // https://github.com/BurntSushi/byteorder/blob/f8e7685b3a81/src/lib.rs#L540
         Self::u64
-            .map(|u64| unsafe { ::std::mem::transmute::<u64, f64>(u64) })
+            .map(f64::from_bits)
             .map_err(|_| Error::Binary(Endianness::Big, BinaryType::f64))
             .parse(input, from)
     }

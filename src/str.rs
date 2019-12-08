@@ -11,10 +11,8 @@ impl<'a> Parser<&'a str> for char {
             if input.as_bytes().get(from).cloned() == Some(*self as u8) {
                 return Ok((from + 1, *self));
             }
-        } else {
-            if input[from..].starts_with(*self) {
-                return Ok((from + self.len_utf8(), *self));
-            }
+        } else if input[from..].starts_with(*self) {
+            return Ok((from + self.len_utf8(), *self));
         }
         Err((from, Error::Char(*self)))
     }

@@ -495,7 +495,7 @@ where
 #[inline(always)]
 pub fn Succeed<F, E>(f: F) -> Succeed<F, E> {
     Succeed {
-        f: f,
+        f,
         e: std::marker::PhantomData,
     }
 }
