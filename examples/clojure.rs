@@ -27,21 +27,36 @@ pub fn value(str: &str, from: usize) -> munch::Result<Value, munch::error::Error
 
     let ws = TakeWhile(char::is_whitespace);
 
-    let integer = Capture(Try((Optional('-'.or('+')),
-                               ascii::TakeWhile1(|b| b >= b'0' && b <= b'9'))))
-        .map(|str| Value::Integer(str.parse().unwrap()));
+    let integer = Capture(Try((
+        Optional('-'.or('+')),
+        ascii::TakeWhile1(|b| b >= b'0' && b <= b'9'),
+    )))
+    .map(|str| Value::Integer(str.parse().unwrap()));
 
     let is_symbol_head = |ch| match ch {
-        'a'...'z' | 'A'...'Z' | '.' | '*' | '+' | '!' | '-' | '_' | '?' | '$' | '%' | '&' |
-        '=' | '<' | '>' => true,
+        'a'...'z'
+        | 'A'...'Z'
+        | '.'
+        | '*'
+        | '+'
+        | '!'
+        | '-'
+        | '_'
+        | '?'
+        | '$'
+        | '%'
+        | '&'
+        | '='
+        | '<'
+        | '>' => true,
         _ => false,
     };
     let is_symbol_tail = |ch| {
-        is_symbol_head(ch) ||
-        match ch {
-            '0'...'9' | ':' | '#' => true,
-            _ => false,
-        }
+        is_symbol_head(ch)
+            || match ch {
+                '0'...'9' | ':' | '#' => true,
+                _ => false,
+            }
     };
     let symbol = Capture((Satisfy(&is_symbol_head), TakeWhile(is_symbol_tail))).map(Value::Symbol);
 
@@ -64,32 +79,50 @@ pub fn main() {
     use std::io::prelude::*;
     use Value::*;
 
-    assert_eq!(parse(EXAMPLE),
-               Ok(vec![List(vec![Symbol("defn"),
-                                 Symbol("sum"),
-                                 Vector(vec![Symbol("xs")]),
-                                 List(vec![Symbol("reduce"),
-                                           Symbol("+"),
-                                           Integer(0),
-                                           Symbol("xs")])]),
-                       List(vec![Symbol("println"),
-                                 List(vec![Symbol("sum"),
-                                           Vector(vec![Integer(3),
-                                                       Integer(-14159),
-                                                       Integer(26535),
-                                                       Integer(-89793),
-                                                       Integer(-23846)])])]),
-                       List(vec![Symbol("->>"),
-                                 List(vec![Symbol("range")]),
-                                 List(vec![Symbol("map"),
-                                           List(vec![Symbol("fn"),
-                                                     Vector(vec![Symbol("x")]),
-                                                     List(vec![Symbol("*"),
-                                                               Symbol("x"),
-                                                               Symbol("x")])])]),
-                                 List(vec![Symbol("filter"), Symbol("even?")]),
-                                 List(vec![Symbol("take"), Integer(10)]),
-                                 List(vec![Symbol("reduce"), Symbol("+")])])]));
+    assert_eq!(
+        parse(EXAMPLE),
+        Ok(vec![
+            List(vec![
+                Symbol("defn"),
+                Symbol("sum"),
+                Vector(vec![Symbol("xs")]),
+                List(vec![
+                    Symbol("reduce"),
+                    Symbol("+"),
+                    Integer(0),
+                    Symbol("xs")
+                ])
+            ]),
+            List(vec![
+                Symbol("println"),
+                List(vec![
+                    Symbol("sum"),
+                    Vector(vec![
+                        Integer(3),
+                        Integer(-14159),
+                        Integer(26535),
+                        Integer(-89793),
+                        Integer(-23846)
+                    ])
+                ])
+            ]),
+            List(vec![
+                Symbol("->>"),
+                List(vec![Symbol("range")]),
+                List(vec![
+                    Symbol("map"),
+                    List(vec![
+                        Symbol("fn"),
+                        Vector(vec![Symbol("x")]),
+                        List(vec![Symbol("*"), Symbol("x"), Symbol("x")])
+                    ])
+                ]),
+                List(vec![Symbol("filter"), Symbol("even?")]),
+                List(vec![Symbol("take"), Integer(10)]),
+                List(vec![Symbol("reduce"), Symbol("+")])
+            ])
+        ])
+    );
 
     let mut string = String::new();
     let stdin = std::io::stdin();

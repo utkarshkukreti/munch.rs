@@ -1,5 +1,5 @@
+use error::{BinaryType, Endianness, Error};
 use {Parser, Result};
-use error::{Error, Endianness, BinaryType};
 
 impl<'a> Parser<&'a [u8]> for u8 {
     type Output = u8;
@@ -31,10 +31,13 @@ impl<'a, 'tmp> Parser<&'a [u8]> for &'tmp [u8] {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Satisfy<F>(pub F) where F: FnMut(u8) -> bool;
+pub struct Satisfy<F>(pub F)
+where
+    F: FnMut(u8) -> bool;
 
 impl<'a, F> Parser<&'a [u8]> for Satisfy<F>
-    where F: FnMut(u8) -> bool
+where
+    F: FnMut(u8) -> bool,
 {
     type Output = u8;
     type Error = Error<'static>;
@@ -51,10 +54,13 @@ impl<'a, F> Parser<&'a [u8]> for Satisfy<F>
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct TakeWhile<F>(pub F) where F: FnMut(u8) -> bool;
+pub struct TakeWhile<F>(pub F)
+where
+    F: FnMut(u8) -> bool;
 
 impl<'a, F> Parser<&'a [u8]> for TakeWhile<F>
-    where F: FnMut(u8) -> bool
+where
+    F: FnMut(u8) -> bool,
 {
     type Output = &'a [u8];
     type Error = Error<'static>;
@@ -70,10 +76,13 @@ impl<'a, F> Parser<&'a [u8]> for TakeWhile<F>
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct TakeWhile1<F>(pub F) where F: FnMut(u8) -> bool;
+pub struct TakeWhile1<F>(pub F)
+where
+    F: FnMut(u8) -> bool;
 
 impl<'a, F> Parser<&'a [u8]> for TakeWhile1<F>
-    where F: FnMut(u8) -> bool
+where
+    F: FnMut(u8) -> bool,
 {
     type Output = &'a [u8];
     type Error = Error<'static>;
@@ -91,7 +100,8 @@ impl<'a, F> Parser<&'a [u8]> for TakeWhile1<F>
 pub struct Capture<P>(pub P);
 
 impl<'a, P> Parser<&'a [u8]> for Capture<P>
-    where P: Parser<&'a [u8]>
+where
+    P: Parser<&'a [u8]>,
 {
     type Output = &'a [u8];
     type Error = P::Error;
@@ -183,13 +193,17 @@ macro_rules! read {
                 ::std::ptr::copy_nonoverlapping(
                     $input.as_ptr().offset($from as isize),
                     &mut data as *mut $ty as *mut u8,
-                    size);
+                    size,
+                );
             }
             Ok(($from + size, data.$method()))
         } else {
-            Err(($from, Error::Binary(Endianness::$endianness, BinaryType::$ty)))
+            Err((
+                $from,
+                Error::Binary(Endianness::$endianness, BinaryType::$ty),
+            ))
         }
-    }}
+    }};
 }
 
 pub enum LittleEndian {}
@@ -239,7 +253,8 @@ impl LittleEndian {
     pub fn f32(input: &[u8], from: usize) -> Result<f32, Error<'static>> {
         // Unsafe code adapted from:
         // https://github.com/BurntSushi/byteorder/blob/f8e7685b3a81/src/lib.rs#L517
-        Self::u32.map(|u32| unsafe { ::std::mem::transmute::<u32, f32>(u32) })
+        Self::u32
+            .map(|u32| unsafe { ::std::mem::transmute::<u32, f32>(u32) })
             .map_err(|_| Error::Binary(Endianness::Little, BinaryType::f32))
             .parse(input, from)
     }
@@ -248,7 +263,8 @@ impl LittleEndian {
     pub fn f64(input: &[u8], from: usize) -> Result<f64, Error<'static>> {
         // Unsafe code adapted from:
         // https://github.com/BurntSushi/byteorder/blob/f8e7685b3a81/src/lib.rs#L540
-        Self::u64.map(|u64| unsafe { ::std::mem::transmute::<u64, f64>(u64) })
+        Self::u64
+            .map(|u64| unsafe { ::std::mem::transmute::<u64, f64>(u64) })
             .map_err(|_| Error::Binary(Endianness::Little, BinaryType::f64))
             .parse(input, from)
     }
@@ -301,7 +317,8 @@ impl BigEndian {
     pub fn f32(input: &[u8], from: usize) -> Result<f32, Error<'static>> {
         // Unsafe code adapted from:
         // https://github.com/BurntSushi/byteorder/blob/f8e7685b3a81/src/lib.rs#L517
-        Self::u32.map(|u32| unsafe { ::std::mem::transmute::<u32, f32>(u32) })
+        Self::u32
+            .map(|u32| unsafe { ::std::mem::transmute::<u32, f32>(u32) })
             .map_err(|_| Error::Binary(Endianness::Big, BinaryType::f32))
             .parse(input, from)
     }
@@ -310,7 +327,8 @@ impl BigEndian {
     pub fn f64(input: &[u8], from: usize) -> Result<f64, Error<'static>> {
         // Unsafe code adapted from:
         // https://github.com/BurntSushi/byteorder/blob/f8e7685b3a81/src/lib.rs#L540
-        Self::u64.map(|u64| unsafe { ::std::mem::transmute::<u64, f64>(u64) })
+        Self::u64
+            .map(|u64| unsafe { ::std::mem::transmute::<u64, f64>(u64) })
             .map_err(|_| Error::Binary(Endianness::Big, BinaryType::f64))
             .parse(input, from)
     }

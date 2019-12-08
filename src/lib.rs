@@ -1,9 +1,9 @@
 mod mac;
 
-pub mod byte;
 pub mod ascii;
-pub mod str;
+pub mod byte;
 pub mod error;
+pub mod str;
 
 pub type Result<Output, Error> = std::result::Result<(usize, Output), (usize, Error)>;
 
@@ -15,101 +15,114 @@ pub trait Parser<Input> {
 
     #[inline(always)]
     fn p(self) -> P<Self>
-        where Self: Sized
+    where
+        Self: Sized,
     {
         P(self)
     }
 
     #[inline(always)]
     fn by_ref(&mut self) -> P<ByRef<Self>>
-        where Self: Sized
+    where
+        Self: Sized,
     {
         P(ByRef(self))
     }
 
     #[inline(always)]
     fn and<B>(self, b: B) -> P<And<Self, B>>
-        where Self: Sized,
-              B: Parser<Input, Error = Self::Error>
+    where
+        Self: Sized,
+        B: Parser<Input, Error = Self::Error>,
     {
         P(And(self, b))
     }
 
     #[inline(always)]
     fn and_skip<B>(self, b: B) -> P<AndSkip<Self, B>>
-        where Self: Sized,
-              B: Parser<Input, Error = Self::Error>
+    where
+        Self: Sized,
+        B: Parser<Input, Error = Self::Error>,
     {
         P(AndSkip(self, b))
     }
 
     #[inline(always)]
     fn skip_and<B>(self, b: B) -> P<SkipAnd<Self, B>>
-        where Self: Sized,
-              B: Parser<Input, Error = Self::Error>
+    where
+        Self: Sized,
+        B: Parser<Input, Error = Self::Error>,
     {
         P(SkipAnd(self, b))
     }
 
     #[inline(always)]
     fn or<B>(self, b: B) -> P<Or<Self, B>>
-        where Self: Sized,
-              B: Parser<Input, Output = Self::Output, Error = Self::Error>
+    where
+        Self: Sized,
+        B: Parser<Input, Output = Self::Output, Error = Self::Error>,
     {
         P(Or(self, b))
     }
 
     #[inline(always)]
     fn map<F, Output>(self, f: F) -> P<Map<Self, F>>
-        where Self: Sized,
-              F: FnMut(Self::Output) -> Output
+    where
+        Self: Sized,
+        F: FnMut(Self::Output) -> Output,
     {
         P(Map(self, f))
     }
 
     #[inline(always)]
     fn map_err<F, Error>(self, f: F) -> P<MapErr<Self, F>>
-        where Self: Sized,
-              F: FnMut(Self::Error) -> Error
+    where
+        Self: Sized,
+        F: FnMut(Self::Error) -> Error,
     {
         P(MapErr(self, f))
     }
 
     #[inline(always)]
     fn and_then<F, Output>(self, f: F) -> P<AndThen<Self, F>>
-        where Self: Sized,
-              F: FnMut(Self::Output) -> std::result::Result<Output, Self::Error>
+    where
+        Self: Sized,
+        F: FnMut(Self::Output) -> std::result::Result<Output, Self::Error>,
     {
         P(AndThen(self, f))
     }
 
     #[inline(always)]
     fn optional(self) -> P<Optional<Self>>
-        where Self: Sized
+    where
+        Self: Sized,
     {
         P(Optional(self))
     }
 
     #[inline(always)]
     fn bind<B, F>(self, f: F) -> P<Bind<Self, F>>
-        where Self: Sized,
-              B: Parser<Input, Error = Self::Error>,
-              F: FnMut(Self::Output) -> B
+    where
+        Self: Sized,
+        B: Parser<Input, Error = Self::Error>,
+        F: FnMut(Self::Output) -> B,
     {
         P(Bind(self, f))
     }
 
     #[inline(always)]
     fn repeat<R>(self, range: R) -> P<Repeat<Self, R>>
-        where Self: Sized,
-              R: Range
+    where
+        Self: Sized,
+        R: Range,
     {
         P(Repeat(self, range))
     }
 }
 
 impl<F, Input, Output, Error> Parser<Input> for F
-    where F: FnMut(Input, usize) -> Result<Output, Error>
+where
+    F: FnMut(Input, usize) -> Result<Output, Error>,
 {
     type Output = Output;
     type Error = Error;
@@ -124,7 +137,8 @@ impl<F, Input, Output, Error> Parser<Input> for F
 pub struct P<A>(pub A);
 
 impl<A, Input> Parser<Input> for P<A>
-    where A: Parser<Input>
+where
+    A: Parser<Input>,
 {
     type Output = A::Output;
     type Error = A::Error;
@@ -139,7 +153,8 @@ impl<A, Input> Parser<Input> for P<A>
 pub struct ByRef<'a, A: 'a>(&'a mut A);
 
 impl<'a, A, Input> Parser<Input> for ByRef<'a, A>
-    where A: Parser<Input>
+where
+    A: Parser<Input>,
 {
     type Output = A::Output;
     type Error = A::Error;
@@ -181,7 +196,8 @@ impl<A, B> std::ops::Shr<B> for P<A> {
 pub struct Pack<F, A>(pub F, pub A);
 
 impl<F, A, Input, Output, Error> Parser<Input> for Pack<F, A>
-    where F: FnMut(Input, usize, &A) -> Result<Output, Error>
+where
+    F: FnMut(Input, usize, &A) -> Result<Output, Error>,
 {
     type Output = Output;
     type Error = Error;
@@ -196,9 +212,10 @@ impl<F, A, Input, Output, Error> Parser<Input> for Pack<F, A>
 pub struct And<A, B>(A, B);
 
 impl<A, B, Input> Parser<Input> for And<A, B>
-    where A: Parser<Input>,
-          B: Parser<Input, Error = A::Error>,
-          Input: Copy
+where
+    A: Parser<Input>,
+    B: Parser<Input, Error = A::Error>,
+    Input: Copy,
 {
     type Output = (A::Output, B::Output);
     type Error = A::Error;
@@ -215,9 +232,10 @@ impl<A, B, Input> Parser<Input> for And<A, B>
 pub struct AndSkip<A, B>(A, B);
 
 impl<A, B, Input> Parser<Input> for AndSkip<A, B>
-    where A: Parser<Input>,
-          B: Parser<Input, Error = A::Error>,
-          Input: Copy
+where
+    A: Parser<Input>,
+    B: Parser<Input, Error = A::Error>,
+    Input: Copy,
 {
     type Output = A::Output;
     type Error = A::Error;
@@ -234,9 +252,10 @@ impl<A, B, Input> Parser<Input> for AndSkip<A, B>
 pub struct SkipAnd<A, B>(A, B);
 
 impl<A, B, Input> Parser<Input> for SkipAnd<A, B>
-    where A: Parser<Input>,
-          B: Parser<Input, Error = A::Error>,
-          Input: Copy
+where
+    A: Parser<Input>,
+    B: Parser<Input, Error = A::Error>,
+    Input: Copy,
 {
     type Output = B::Output;
     type Error = A::Error;
@@ -252,9 +271,10 @@ impl<A, B, Input> Parser<Input> for SkipAnd<A, B>
 pub struct Or<A, B>(A, B);
 
 impl<A, B, Input> Parser<Input> for Or<A, B>
-    where A: Parser<Input>,
-          B: Parser<Input, Output = A::Output, Error = A::Error>,
-          Input: Copy
+where
+    A: Parser<Input>,
+    B: Parser<Input, Output = A::Output, Error = A::Error>,
+    Input: Copy,
 {
     type Output = A::Output;
     type Error = A::Error;
@@ -278,14 +298,17 @@ impl<A, B, Input> Parser<Input> for Or<A, B>
 pub struct Try<A>(pub A);
 
 impl<A, Input> Parser<Input> for Try<A>
-    where A: Parser<Input>
+where
+    A: Parser<Input>,
 {
     type Output = A::Output;
     type Error = A::Error;
 
     #[inline(always)]
     fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
-        self.0.parse(input, from).map_err(|(_, error)| (from, error))
+        self.0
+            .parse(input, from)
+            .map_err(|(_, error)| (from, error))
     }
 }
 
@@ -293,8 +316,9 @@ impl<A, Input> Parser<Input> for Try<A>
 pub struct Map<A, F>(A, F);
 
 impl<A, F, Input, Output> Parser<Input> for Map<A, F>
-    where A: Parser<Input>,
-          F: FnMut(A::Output) -> Output
+where
+    A: Parser<Input>,
+    F: FnMut(A::Output) -> Output,
 {
     type Output = Output;
     type Error = A::Error;
@@ -311,8 +335,9 @@ impl<A, F, Input, Output> Parser<Input> for Map<A, F>
 pub struct MapErr<A, F>(A, F);
 
 impl<A, F, Input, Error> Parser<Input> for MapErr<A, F>
-    where A: Parser<Input>,
-          F: FnMut(A::Error) -> Error
+where
+    A: Parser<Input>,
+    F: FnMut(A::Error) -> Error,
 {
     type Output = A::Output;
     type Error = Error;
@@ -366,18 +391,21 @@ tuple_impl! {
 pub struct AndThen<A, F>(A, F);
 
 impl<A, F, Input, Output> Parser<Input> for AndThen<A, F>
-    where A: Parser<Input>,
-          F: FnMut(A::Output) -> std::result::Result<Output, A::Error>
+where
+    A: Parser<Input>,
+    F: FnMut(A::Output) -> std::result::Result<Output, A::Error>,
 {
     type Output = Output;
     type Error = A::Error;
 
     #[inline(always)]
     fn parse(&mut self, input: Input, from: usize) -> Result<Self::Output, Self::Error> {
-        self.0.parse(input, from).and_then(|(from, output)| match self.1(output) {
-            Ok(output) => Ok((from, output)),
-            Err(error) => Err((from, error)),
-        })
+        self.0
+            .parse(input, from)
+            .and_then(|(from, output)| match self.1(output) {
+                Ok(output) => Ok((from, output)),
+                Err(error) => Err((from, error)),
+            })
     }
 }
 
@@ -385,7 +413,8 @@ impl<A, F, Input, Output> Parser<Input> for AndThen<A, F>
 pub struct Optional<A>(pub A);
 
 impl<A, Input> Parser<Input> for Optional<A>
-    where A: Parser<Input>
+where
+    A: Parser<Input>,
 {
     type Output = Option<A::Output>;
     type Error = A::Error;
@@ -404,10 +433,11 @@ impl<A, Input> Parser<Input> for Optional<A>
 pub struct Bind<A, F>(A, F);
 
 impl<A, B, F, Input> Parser<Input> for Bind<A, F>
-    where A: Parser<Input>,
-          B: Parser<Input, Error = A::Error>,
-          F: FnMut(A::Output) -> B,
-          Input: Copy
+where
+    A: Parser<Input>,
+    B: Parser<Input, Error = A::Error>,
+    F: FnMut(A::Output) -> B,
+    Input: Copy,
 {
     type Output = B::Output;
     type Error = A::Error;
@@ -425,8 +455,9 @@ impl<A, B, F, Input> Parser<Input> for Bind<A, F>
 pub struct Guard<F, E>(pub F, pub E);
 
 impl<F, E, Input, Error> Parser<Input> for Guard<F, E>
-    where F: FnMut() -> bool,
-          E: FnMut() -> Error
+where
+    F: FnMut() -> bool,
+    E: FnMut() -> Error,
 {
     type Output = ();
     type Error = Error;
@@ -448,7 +479,8 @@ pub struct Succeed<F, E> {
 }
 
 impl<F, E, Input, Output> Parser<Input> for Succeed<F, E>
-    where F: FnMut() -> Output
+where
+    F: FnMut() -> Output,
 {
     type Output = Output;
     type Error = E;
@@ -472,7 +504,8 @@ pub fn Succeed<F, E>(f: F) -> Succeed<F, E> {
 pub struct Fail<F>(pub F);
 
 impl<F, Input, Error> Parser<Input> for Fail<F>
-    where F: FnMut() -> Error
+where
+    F: FnMut() -> Error,
 {
     type Output = ();
     type Error = Error;
@@ -554,38 +587,43 @@ impl Range for std::ops::Range<usize> {
 pub struct Repeat<A, R: Range>(A, R);
 
 impl<A, R> P<Repeat<A, R>>
-    where R: Range
+where
+    R: Range,
 {
     #[inline(always)]
     pub fn collect<C, Input>(self) -> P<Collect<A, R, C>>
-        where A: Parser<Input>,
-              C: Default + Extend<A::Output>
+    where
+        A: Parser<Input>,
+        C: Default + Extend<A::Output>,
     {
         P(Collect((self.0).0, (self.0).1, std::marker::PhantomData))
     }
 
     #[inline(always)]
     pub fn join<B, Input>(self, b: B) -> P<Join<A, B, R>>
-        where A: Parser<Input>,
-              B: Parser<Input, Error = A::Error>
+    where
+        A: Parser<Input>,
+        B: Parser<Input, Error = A::Error>,
     {
         P(Join((self.0).0, b, (self.0).1))
     }
 
     #[inline(always)]
     pub fn fold<Acc, F, Input, Output>(self, acc: Acc, f: F) -> P<Fold<A, R, Acc, F>>
-        where A: Parser<Input>,
-              Acc: FnMut() -> Output,
-              F: FnMut(Output, A::Output) -> Output
+    where
+        A: Parser<Input>,
+        Acc: FnMut() -> Output,
+        F: FnMut(Output, A::Output) -> Output,
     {
         P(Fold((self.0).0, (self.0).1, acc, f))
     }
 }
 
 impl<A, R, Input> Parser<Input> for Repeat<A, R>
-    where A: Parser<Input>,
-          R: Range,
-          Input: Copy
+where
+    A: Parser<Input>,
+    R: Range,
+    Input: Copy,
 {
     type Output = Vec<A::Output>;
     type Error = A::Error;
@@ -607,10 +645,11 @@ impl<A, R, Input> Parser<Input> for Repeat<A, R>
 pub struct Collect<A, R: Range, C>(A, R, std::marker::PhantomData<C>);
 
 impl<A, R, C, Input> Parser<Input> for Collect<A, R, C>
-    where A: Parser<Input>,
-          R: Range,
-          C: Default + Extend<A::Output>,
-          Input: Copy
+where
+    A: Parser<Input>,
+    R: Range,
+    C: Default + Extend<A::Output>,
+    Input: Copy,
 {
     type Output = C;
     type Error = A::Error;
@@ -632,11 +671,12 @@ impl<A, R, C, Input> Parser<Input> for Collect<A, R, C>
 pub struct Fold<A, R: Range, Acc, F>(A, R, Acc, F);
 
 impl<A, R, Acc, F, Input, Output> Parser<Input> for Fold<A, R, Acc, F>
-    where A: Parser<Input>,
-          R: Range,
-          Acc: FnMut() -> Output,
-          F: FnMut(Output, A::Output) -> Output,
-          Input: Copy
+where
+    A: Parser<Input>,
+    R: Range,
+    Acc: FnMut() -> Output,
+    F: FnMut(Output, A::Output) -> Output,
+    Input: Copy,
 {
     type Output = Output;
     type Error = A::Error;
@@ -674,26 +714,36 @@ pub struct Join<A, B, R: Range>(A, B, R);
 
 impl<A, B, R: Range> P<Join<A, B, R>> {
     #[inline(always)]
-    pub fn fold<Init, First, Rest, Input, Output>(self,
-                                                  init: Init,
-                                                  first: First,
-                                                  rest: Rest)
-                                                  -> P<JoinFold<A, B, R, Init, First, Rest>>
-        where A: Parser<Input>,
-              B: Parser<Input, Error = A::Error>,
-              Init: FnMut() -> Output,
-              First: FnMut(Output, A::Output) -> Output,
-              Rest: FnMut(Output, B::Output, A::Output) -> Output
+    pub fn fold<Init, First, Rest, Input, Output>(
+        self,
+        init: Init,
+        first: First,
+        rest: Rest,
+    ) -> P<JoinFold<A, B, R, Init, First, Rest>>
+    where
+        A: Parser<Input>,
+        B: Parser<Input, Error = A::Error>,
+        Init: FnMut() -> Output,
+        First: FnMut(Output, A::Output) -> Output,
+        Rest: FnMut(Output, B::Output, A::Output) -> Output,
     {
-        P(JoinFold((self.0).0, (self.0).1, (self.0).2, init, first, rest))
+        P(JoinFold(
+            (self.0).0,
+            (self.0).1,
+            (self.0).2,
+            init,
+            first,
+            rest,
+        ))
     }
 }
 
 impl<A, B, R, Input> Parser<Input> for Join<A, B, R>
-    where A: Parser<Input>,
-          B: Parser<Input, Error = A::Error>,
-          R: Range,
-          Input: Copy
+where
+    A: Parser<Input>,
+    B: Parser<Input, Error = A::Error>,
+    R: Range,
+    Input: Copy,
 {
     type Output = Vec<A::Output>;
     type Error = A::Error;
@@ -704,15 +754,17 @@ impl<A, B, R, Input> Parser<Input> for Join<A, B, R>
             .by_ref()
             .repeat(self.2.clone())
             .join(self.1.by_ref())
-            .fold(Vec::new,
-                  |mut vec: Vec<_>, output| {
-                      vec.push(output);
-                      vec
-                  },
-                  |mut vec: Vec<_>, _, output| {
-                      vec.push(output);
-                      vec
-                  })
+            .fold(
+                Vec::new,
+                |mut vec: Vec<_>, output| {
+                    vec.push(output);
+                    vec
+                },
+                |mut vec: Vec<_>, _, output| {
+                    vec.push(output);
+                    vec
+                },
+            )
             .parse(input, from)
     }
 }
@@ -722,13 +774,14 @@ pub struct JoinFold<A, B, R: Range, Init, First, Rest>(A, B, R, Init, First, Res
 
 impl<A, B, R, Init, First, Rest, Input, Output> Parser<Input>
     for JoinFold<A, B, R, Init, First, Rest>
-    where A: Parser<Input>,
-          B: Parser<Input, Error = A::Error>,
-          R: Range,
-          Init: FnMut() -> Output,
-          First: FnMut(Output, A::Output) -> Output,
-          Rest: FnMut(Output, B::Output, A::Output) -> Output,
-          Input: Copy
+where
+    A: Parser<Input>,
+    B: Parser<Input, Error = A::Error>,
+    R: Range,
+    Init: FnMut() -> Output,
+    First: FnMut(Output, A::Output) -> Output,
+    Rest: FnMut(Output, B::Output, A::Output) -> Output,
+    Input: Copy,
 {
     type Output = Output;
     type Error = A::Error;

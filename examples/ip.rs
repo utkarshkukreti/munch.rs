@@ -22,19 +22,23 @@ pub fn parse(str: &str) -> Result<Ip, (usize, Error)> {
             .repeat(1..3)
             .fold(|| 0, |acc, x| acc * 10 + x as u16 - 48)
             .map_err(|_| Error::ExpectedInteger)
-            .and_then(|n| if n < 256 {
-                Ok(n as u8)
-            } else {
-                Err(Error::IntegerOverflow)
+            .and_then(|n| {
+                if n < 256 {
+                    Ok(n as u8)
+                } else {
+                    Err(Error::IntegerOverflow)
+                }
             })
     };
 
     let dot = || b'.'.map_err(|_| Error::ExpectedDot);
 
-    (octet() << dot(),
-     octet() << dot(),
-     octet() << dot(),
-     octet() << End.map_err(|_| Error::ExpectedEnd))
+    (
+        octet() << dot(),
+        octet() << dot(),
+        octet() << dot(),
+        octet() << End.map_err(|_| Error::ExpectedEnd),
+    )
         .map(|(a, b, c, d)| Ip(a, b, c, d))
         .parse(str.as_bytes(), 0)
         .map(|(_, ip)| ip)

@@ -1,14 +1,17 @@
 use std;
 
-use {Parser, Result, str};
 use error::{Ascii, Error};
+use {str, Parser, Result};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Satisfy<F>(pub F) where F: FnMut(u8) -> bool;
+pub struct Satisfy<F>(pub F)
+where
+    F: FnMut(u8) -> bool;
 
 impl<'a, F, Input> Parser<&'a Input> for Satisfy<F>
-    where F: FnMut(u8) -> bool,
-          Input: AsRef<[u8]> + ?Sized
+where
+    F: FnMut(u8) -> bool,
+    Input: AsRef<[u8]> + ?Sized,
 {
     type Output = u8;
     type Error = Error<'static>;
@@ -26,11 +29,14 @@ impl<'a, F, Input> Parser<&'a Input> for Satisfy<F>
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct TakeWhile<F>(pub F) where F: FnMut(u8) -> bool;
+pub struct TakeWhile<F>(pub F)
+where
+    F: FnMut(u8) -> bool;
 
 impl<'a, F, Input> Parser<&'a Input> for TakeWhile<F>
-    where F: FnMut(u8) -> bool,
-          Input: AsRef<[u8]> + ?Sized
+where
+    F: FnMut(u8) -> bool,
+    Input: AsRef<[u8]> + ?Sized,
 {
     type Output = &'a str;
     type Error = Error<'static>;
@@ -38,7 +44,10 @@ impl<'a, F, Input> Parser<&'a Input> for TakeWhile<F>
     #[inline(always)]
     fn parse(&mut self, input: &'a Input, from: usize) -> Result<Self::Output, Self::Error> {
         let input = input.as_ref();
-        let to = match input[from..].iter().position(|&u8| u8 > 0x7F || !self.0(u8)) {
+        let to = match input[from..]
+            .iter()
+            .position(|&u8| u8 > 0x7F || !self.0(u8))
+        {
             Some(position) => from + position,
             None => input.len(),
         };
@@ -46,16 +55,21 @@ impl<'a, F, Input> Parser<&'a Input> for TakeWhile<F>
         // All the bytes in `from..to` must be `<= 0x7F`, and therefore valid UTF-8, making the
         // following unchecked conversion safe.
         debug_assert!(std::str::from_utf8(&input[from..to]).is_ok());
-        Ok((to, unsafe { std::str::from_utf8_unchecked(&input[from..to]) }))
+        Ok((to, unsafe {
+            std::str::from_utf8_unchecked(&input[from..to])
+        }))
     }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct TakeWhile1<F>(pub F) where F: FnMut(u8) -> bool;
+pub struct TakeWhile1<F>(pub F)
+where
+    F: FnMut(u8) -> bool;
 
 impl<'a, F, Input> Parser<&'a Input> for TakeWhile1<F>
-    where F: FnMut(u8) -> bool,
-          Input: AsRef<[u8]> + ?Sized
+where
+    F: FnMut(u8) -> bool,
+    Input: AsRef<[u8]> + ?Sized,
 {
     type Output = &'a str;
     type Error = Error<'static>;

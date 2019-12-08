@@ -1,8 +1,8 @@
 extern crate munch;
 
-use munch::*;
 use munch::error::Error;
 use munch::str::*;
+use munch::*;
 
 #[macro_use]
 mod t;
@@ -277,10 +277,12 @@ fn tuple() {
 
 #[test]
 fn fn_() {
-    let mut pi = |input: &str, from: usize| if input[from..].starts_with("pi") {
-        Ok((from + 2, 'π'))
-    } else {
-        Err((from, ()))
+    let mut pi = |input: &str, from: usize| {
+        if input[from..].starts_with("pi") {
+            Ok((from + 2, 'π'))
+        } else {
+            Err((from, ()))
+        }
     };
 
     t! {
@@ -417,7 +419,9 @@ fn repeat() {
         use std::cmp::Ordering::*;
         let (min, max) = (range.min(), range.max());
         let mut p1 = ('π', 'r', '²').repeat(range.clone());
-        let mut p2 = (Try(('π', 'r')), '²').map(|((a, b), c)| (a, b, c)).repeat(range.clone());
+        let mut p2 = (Try(('π', 'r')), '²')
+            .map(|((a, b), c)| (a, b, c))
+            .repeat(range.clone());
         for i in 0..36 {
             let string = "πr²".chars().cycle().take(i).collect::<String>();
             let r1 = p1.parse(&string, 0);

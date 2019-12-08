@@ -14,11 +14,11 @@ fn is_alphabetic(b: u8) -> bool {
 }
 
 fn is_alphanumeric(b: u8) -> bool {
-    is_alphabetic(b) ||
-    match b {
-        b'0'...b'9' => true,
-        _ => false,
-    }
+    is_alphabetic(b)
+        || match b {
+            b'0'...b'9' => true,
+            _ => false,
+        }
 }
 
 #[test]

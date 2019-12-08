@@ -1,8 +1,8 @@
 #[macro_use]
 extern crate munch;
 
-use munch::*;
 use munch::str::*;
+use munch::*;
 
 #[macro_use]
 mod t;

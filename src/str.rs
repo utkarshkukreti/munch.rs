@@ -1,5 +1,5 @@
-use {Parser, Result};
 use error::Error;
+use {Parser, Result};
 
 impl<'a> Parser<&'a str> for char {
     type Output = char;
@@ -38,10 +38,13 @@ impl<'a, 'tmp> Parser<&'a str> for &'tmp str {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Satisfy<F>(pub F) where F: FnMut(char) -> bool;
+pub struct Satisfy<F>(pub F)
+where
+    F: FnMut(char) -> bool;
 
 impl<'a, F> Parser<&'a str> for Satisfy<F>
-    where F: FnMut(char) -> bool
+where
+    F: FnMut(char) -> bool,
 {
     type Output = char;
     type Error = Error<'static>;
@@ -58,10 +61,13 @@ impl<'a, F> Parser<&'a str> for Satisfy<F>
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct TakeWhile<F>(pub F) where F: FnMut(char) -> bool;
+pub struct TakeWhile<F>(pub F)
+where
+    F: FnMut(char) -> bool;
 
 impl<'a, F> Parser<&'a str> for TakeWhile<F>
-    where F: FnMut(char) -> bool
+where
+    F: FnMut(char) -> bool,
 {
     type Output = &'a str;
     type Error = Error<'static>;
@@ -80,10 +86,13 @@ impl<'a, F> Parser<&'a str> for TakeWhile<F>
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct TakeWhile1<F>(pub F) where F: FnMut(char) -> bool;
+pub struct TakeWhile1<F>(pub F)
+where
+    F: FnMut(char) -> bool;
 
 impl<'a, F> Parser<&'a str> for TakeWhile1<F>
-    where F: FnMut(char) -> bool
+where
+    F: FnMut(char) -> bool,
 {
     type Output = &'a str;
     type Error = Error<'static>;
@@ -101,7 +110,8 @@ impl<'a, F> Parser<&'a str> for TakeWhile1<F>
 pub struct Capture<P>(pub P);
 
 impl<'a, P> Parser<&'a str> for Capture<P>
-    where P: Parser<&'a str>
+where
+    P: Parser<&'a str>,
 {
     type Output = &'a str;
     type Error = P::Error;
