@@ -517,9 +517,7 @@ where
 }
 
 pub trait Range: Clone {
-    #[inline(always)]
     fn min(&self) -> usize;
-    #[inline(always)]
     fn max(&self) -> Option<usize>;
 }
 

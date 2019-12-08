@@ -1,4 +1,3 @@
-#[macro_use]
 extern crate munch;
 
 use munch::str::*;
@@ -75,7 +74,7 @@ fn mac() {
             'n' => "null",
             'f' => "false",
             't' => "true",
-            '0' | '1' | '2' ... '9' => TakeWhile1(|ch| ch.is_digit(10)),
+            '0' | '1' | '2' ..= '9' => TakeWhile1(|ch| ch.is_digit(10)),
             _ => |_, from| Err((from, munch::error::Error::Satisfy)),
         },
         End,

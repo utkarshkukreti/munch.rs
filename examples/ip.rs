@@ -14,7 +14,6 @@ pub enum Error {
 }
 
 pub fn parse(str: &str) -> Result<Ip, (usize, Error)> {
-    use self::Error;
     use munch::byte::*;
 
     let octet = || {
@@ -63,7 +62,7 @@ pub fn main() {
         print!("> ");
         stdout.flush().unwrap();
         stdin.read_line(&mut string).unwrap();
-        println!("{:?}", parse(string.trim_right()));
+        println!("{:?}", parse(string.trim_end()));
         string.clear();
     }
 }

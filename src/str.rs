@@ -182,5 +182,5 @@ unsafe fn slice_unchecked(str: &str, from: usize, to: usize) -> &str {
     debug_assert!(from <= to);
     debug_assert!(str.is_char_boundary(from));
     debug_assert!(str.is_char_boundary(to));
-    str.slice_unchecked(from, to)
+    str.get_unchecked(from..to)
 }

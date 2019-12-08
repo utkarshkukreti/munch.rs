@@ -2,14 +2,13 @@ extern crate munch;
 
 use munch::ascii::*;
 use munch::error::*;
-use munch::str;
 
 #[macro_use]
 mod t;
 
 fn is_alphabetic(u8: u8) -> bool {
     match u8 {
-        b'a'...b'z' | b'A'...b'Z' => true,
+        b'a'..=b'z' | b'A'..=b'Z' => true,
         _ => false,
     }
 }

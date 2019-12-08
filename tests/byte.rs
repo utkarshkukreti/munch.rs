@@ -8,7 +8,7 @@ mod t;
 
 fn is_alphabetic(b: u8) -> bool {
     match b {
-        b'a'...b'z' | b'A'...b'Z' => true,
+        b'a'..=b'z' | b'A'..=b'Z' => true,
         _ => false,
     }
 }
@@ -16,7 +16,7 @@ fn is_alphabetic(b: u8) -> bool {
 fn is_alphanumeric(b: u8) -> bool {
     is_alphabetic(b)
         || match b {
-            b'0'...b'9' => true,
+            b'0'..=b'9' => true,
             _ => false,
         }
 }

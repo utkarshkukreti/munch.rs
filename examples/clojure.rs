@@ -34,8 +34,8 @@ pub fn value(str: &str, from: usize) -> munch::Result<Value, munch::error::Error
     .map(|str| Value::Integer(str.parse().unwrap()));
 
     let is_symbol_head = |ch| match ch {
-        'a'...'z'
-        | 'A'...'Z'
+        'a'..='z'
+        | 'A'..='Z'
         | '.'
         | '*'
         | '+'
@@ -54,7 +54,7 @@ pub fn value(str: &str, from: usize) -> munch::Result<Value, munch::error::Error
     let is_symbol_tail = |ch| {
         is_symbol_head(ch)
             || match ch {
-                '0'...'9' | ':' | '#' => true,
+                '0'..='9' | ':' | '#' => true,
                 _ => false,
             }
     };
