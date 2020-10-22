@@ -188,7 +188,7 @@ fn or() {
 }
 
 #[test]
-fn try() {
+fn r#try() {
     t! {
         Try('π'.and('r').and('²')) => {
             "" => Err((0, Error::Char('π'))),

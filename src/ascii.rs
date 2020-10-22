@@ -1,7 +1,5 @@
-use std;
-
-use error::{Ascii, Error};
-use {str, Parser, Result};
+use crate::error::{Ascii, Error};
+use crate::{str, Parser, Result};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Satisfy<F>(pub F)

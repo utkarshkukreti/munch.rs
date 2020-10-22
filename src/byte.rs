@@ -1,5 +1,5 @@
-use error::{BinaryType, Endianness, Error};
-use {Parser, Result};
+use crate::error::{BinaryType, Endianness, Error};
+use crate::{Parser, Result};
 
 impl<'a> Parser<&'a [u8]> for u8 {
     type Output = u8;

@@ -1,5 +1,5 @@
-use error::Error;
-use {Parser, Result};
+use crate::error::Error;
+use crate::{Parser, Result};
 
 impl<'a> Parser<&'a str> for char {
     type Output = char;
