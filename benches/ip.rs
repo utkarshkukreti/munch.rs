@@ -1,5 +1,4 @@
 #![cfg_attr(test, feature(test))]
-extern crate munch;
 extern crate test;
 
 #[path = "../examples/ip.rs"]
