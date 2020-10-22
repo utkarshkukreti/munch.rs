@@ -7,18 +7,11 @@ use munch::error::{BinaryType, Endianness, Error};
 mod t;
 
 fn is_alphabetic(b: u8) -> bool {
-    match b {
-        b'a'..=b'z' | b'A'..=b'Z' => true,
-        _ => false,
-    }
+    matches!(b, b'a'..=b'z' | b'A'..=b'Z')
 }
 
 fn is_alphanumeric(b: u8) -> bool {
-    is_alphabetic(b)
-        || match b {
-            b'0'..=b'9' => true,
-            _ => false,
-        }
+    is_alphabetic(b) || matches!(b, b'0'..=b'9')
 }
 
 #[test]
@@ -228,8 +221,8 @@ fn little_endian() {
             s(1) => Err((0, e(BinaryType::f32))),
             s(2) => Err((0, e(BinaryType::f32))),
             s(3) => Err((0, e(BinaryType::f32))),
-            s(4) => Ok((4, -1.7512819788279716e30)),
-            s(5) => Ok((4, -1.7512819788279716e30)),
+            s(4) => Ok((4, -1.751_282e30)),
+            s(5) => Ok((4, -1.751_282e30)),
         },
         LittleEndian::f64 => {
             s(0) => Err((0, e(BinaryType::f64))),
@@ -320,8 +313,8 @@ fn big_endian() {
             s(1) => Err((0, e(BinaryType::f32))),
             s(2) => Err((0, e(BinaryType::f32))),
             s(3) => Err((0, e(BinaryType::f32))),
-            s(4) => Ok((4, -2.1577294798898393e-26)),
-            s(5) => Ok((4, -2.1577294798898393e-26)),
+            s(4) => Ok((4, -2.157_729_5e-26)),
+            s(5) => Ok((4, -2.157_729_5e-26)),
         },
         BigEndian::f64 => {
             s(0) => Err((0, e(BinaryType::f64))),

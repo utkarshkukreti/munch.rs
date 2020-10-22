@@ -33,7 +33,7 @@ pub fn parse(str: &str) -> Result<Value, (usize, munch::error::Error<'static>)> 
         .map(|(_, output)| output)
 }
 
-pub static EXAMPLE: &'static str = "
+pub static EXAMPLE: &str = "
 [owner]
 name=John Doe
 organization=Acme Widgets Inc.

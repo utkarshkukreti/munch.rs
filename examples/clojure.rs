@@ -2,7 +2,7 @@ extern crate munch;
 
 use munch::{Optional, Parser, Try};
 
-pub static EXAMPLE: &'static str = "
+pub static EXAMPLE: &str = "
 (defn sum [xs]
   (reduce + 0 xs))
 (println (sum [3 -14159 +26535 -89793 -23846]))
@@ -33,7 +33,8 @@ pub fn value(str: &str, from: usize) -> munch::Result<Value, munch::error::Error
     )))
     .map(|str| Value::Integer(str.parse().unwrap()));
 
-    let is_symbol_head = |ch| match ch {
+    let is_symbol_head = |ch| {
+        matches!(ch,
         'a'..='z'
         | 'A'..='Z'
         | '.'
@@ -48,16 +49,9 @@ pub fn value(str: &str, from: usize) -> munch::Result<Value, munch::error::Error
         | '&'
         | '='
         | '<'
-        | '>' => true,
-        _ => false,
+        | '>')
     };
-    let is_symbol_tail = |ch| {
-        is_symbol_head(ch)
-            || match ch {
-                '0'..='9' | ':' | '#' => true,
-                _ => false,
-            }
-    };
+    let is_symbol_tail = |ch| is_symbol_head(ch) || matches!(ch, '0'..='9' | ':' | '#');
     let symbol = Capture((Satisfy(&is_symbol_head), TakeWhile(is_symbol_tail))).map(Value::Symbol);
 
     let list = '('.p() >> ws >> value.repeat(..).map(Value::List) << ')';

@@ -73,7 +73,7 @@ where
     #[inline(always)]
     fn parse(&mut self, input: &'a str, from: usize) -> Result<Self::Output, Self::Error> {
         let mut chars = input[from..].chars();
-        let to = match chars.by_ref().skip_while(|&char| self.0(char)).next() {
+        let to = match chars.by_ref().find(|&char| !self.0(char)) {
             Some(char) => input.len() - chars.as_str().len() - char.len_utf8(),
             None => input.len(),
         };

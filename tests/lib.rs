@@ -421,7 +421,7 @@ fn repeat() {
         let mut p1 = ('π', 'r', '²').repeat(range.clone());
         let mut p2 = (Try(('π', 'r')), '²')
             .map(|((a, b), c)| (a, b, c))
-            .repeat(range.clone());
+            .repeat(range);
         for i in 0..36 {
             let string = "πr²".chars().cycle().take(i).collect::<String>();
             let r1 = p1.parse(&string, 0);
@@ -434,8 +434,8 @@ fn repeat() {
             };
             match (i % 3, cmp) {
                 (0, Less) => {
-                    assert_eq!(r1, Err((complete * 5 + 0, Error::Char('π'))));
-                    assert_eq!(r2, Err((complete * 5 + 0, Error::Char('π'))));
+                    assert_eq!(r1, Err((complete * 5, Error::Char('π'))));
+                    assert_eq!(r2, Err((complete * 5, Error::Char('π'))));
                 }
                 (1, Less) => {
                     assert_eq!(r1, Err((complete * 5 + 2, Error::Char('r'))));
@@ -497,7 +497,7 @@ fn fold() {
         });
 
         let flatten = |((a, b), c)| (a, b, c);
-        let mut p2 = (Try(('π', 'r')), '²').map(&flatten).repeat(range.clone());
+        let mut p2 = (Try(('π', 'r')), '²').map(&flatten).repeat(range);
         let mut p2f = p2.clone().fold(Vec::new, |mut acc, x| {
             acc.push(x);
             acc
@@ -527,7 +527,7 @@ fn join() {
         use std::cmp::Ordering::*;
         let (min, max) = (range.min(), range.max());
         let mut p1 = 'π'.repeat(range.clone()).join(('r', '²'));
-        let mut p2 = 'π'.repeat(range.clone()).join(Try(('r', '²')));
+        let mut p2 = 'π'.repeat(range).join(Try(('r', '²')));
         for i in 0..36 {
             let string = "πr²".chars().cycle().take(i).collect::<String>();
             let r1 = p1.parse(&string, 0);
@@ -607,7 +607,7 @@ fn join_fold() {
         };
         let mut p1 = 'π'.repeat(range.clone()).join(('r', '²'));
         let mut p1f = p1.clone().fold(Vec::new, &first, &rest);
-        let mut p2 = 'π'.repeat(range.clone()).join(Try(('r', '²')));
+        let mut p2 = 'π'.repeat(range).join(Try(('r', '²')));
         let mut p2f = p2.clone().fold(Vec::new, &first, &rest);
         for i in 0..36 {
             let string = "πr²".chars().cycle().take(i).collect::<String>();

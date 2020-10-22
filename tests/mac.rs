@@ -11,13 +11,13 @@ fn mac() {
     #[derive(Debug, PartialEq)]
     enum Error {
         Munch(munch::error::Error<'static>),
-        ParseIntError(std::num::ParseIntError),
+        ParseInt(std::num::ParseIntError),
         AllEqual(u8),
     }
 
     let mut u8 = TakeWhile1(|ch| '0' <= ch && ch <= '9')
         .map_err(Error::Munch)
-        .and_then(|str: &str| str.parse::<u8>().map_err(Error::ParseIntError));
+        .and_then(|str: &str| str.parse::<u8>().map_err(Error::ParseInt));
 
     #[derive(Debug, PartialEq)]
     struct Ip(u8, u8, u8, u8);
@@ -47,8 +47,8 @@ fn mac() {
             "1.2" => Err((3, Error::Munch(munch::error::Error::Satisfy))),
             "1.2." => Err((4, Error::Munch(munch::error::Error::TakeWhile1))),
             "1.2.3.4" => Ok((7, Ip(1, 2, 4, 4))),
-            "256" => Err((3, Error::ParseIntError("256".parse::<u8>().err().unwrap()))),
-            "1.2.3.256" => Err((9, Error::ParseIntError("256".parse::<u8>().err().unwrap()))),
+            "256" => Err((3, Error::ParseInt("256".parse::<u8>().err().unwrap()))),
+            "1.2.3.256" => Err((9, Error::ParseInt("256".parse::<u8>().err().unwrap()))),
             "1.1.0.1" => Err((7, Error::AllEqual(1))),
         },
     }

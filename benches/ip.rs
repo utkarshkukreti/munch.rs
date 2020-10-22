@@ -4,7 +4,7 @@ extern crate test;
 #[path = "../examples/ip.rs"]
 mod ip;
 
-static IPS: &[&'static str] = &["0.0.0.0", "127.0.0.1", "192.168.1.1", "255.255.255.255"];
+static IPS: &[&str] = &["0.0.0.0", "127.0.0.1", "192.168.1.1", "255.255.255.255"];
 
 #[bench]
 fn bench_ip_example(b: &mut test::Bencher) {

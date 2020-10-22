@@ -7,10 +7,7 @@ use munch::error::*;
 mod t;
 
 fn is_alphabetic(u8: u8) -> bool {
-    match u8 {
-        b'a'..=b'z' | b'A'..=b'Z' => true,
-        _ => false,
-    }
+    matches!(u8, b'a'..=b'z' | b'A'..=b'Z')
 }
 
 #[test]
