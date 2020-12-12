@@ -15,6 +15,3 @@ categories = ["parsing"]
 license = "MIT/Apache-2.0"
 
 [dependencies]
-
-[badges]
-travis-ci = { repository = "utkarshkukreti/munch.rs" }
