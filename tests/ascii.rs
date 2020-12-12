@@ -1,5 +1,3 @@
-extern crate munch;
-
 use munch::ascii::*;
 use munch::error::*;
 

@@ -1,5 +1,3 @@
-extern crate munch;
-
 use munch::byte::*;
 use munch::error::{BinaryType, Endianness, Error};
 

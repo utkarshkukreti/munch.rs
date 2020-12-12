@@ -1,5 +1,3 @@
-extern crate munch;
-
 use munch::{Optional, Parser};
 
 pub fn expr(str: &str, from: usize) -> munch::Result<i64, munch::error::Error<'static>> {

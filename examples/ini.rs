@@ -1,5 +1,3 @@
-extern crate munch;
-
 use std::collections::HashMap;
 
 use munch::{Optional, Parser};

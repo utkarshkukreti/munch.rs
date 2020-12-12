@@ -1,5 +1,3 @@
-extern crate munch;
-
 use munch::{Optional, Parser, Try};
 
 pub static EXAMPLE: &str = "

@@ -1,5 +1,3 @@
-extern crate munch;
-
 use munch::Parser;
 
 #[derive(Clone, Debug, PartialEq)]

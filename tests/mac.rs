@@ -1,5 +1,3 @@
-extern crate munch;
-
 use munch::str::*;
 use munch::*;
 
