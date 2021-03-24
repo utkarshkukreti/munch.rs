@@ -50,12 +50,7 @@ where
             None => input.len(),
         };
 
-        // All the bytes in `from..to` must be `<= 0x7F`, and therefore valid UTF-8, making the
-        // following unchecked conversion safe.
-        debug_assert!(std::str::from_utf8(&input[from..to]).is_ok());
-        Ok((to, unsafe {
-            std::str::from_utf8_unchecked(&input[from..to])
-        }))
+        Ok((to, std::str::from_utf8(&input[from..to]).unwrap()))
     }
 }
 
