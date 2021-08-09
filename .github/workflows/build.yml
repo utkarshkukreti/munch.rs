@@ -1,15 +1,15 @@
-name: CI
+name: Build
 
 on: [push, pull_request]
 
 jobs:
-  ci:
+  build:
     name: ${{ matrix.os }} - ${{ matrix.rust }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        rust: [stable, beta, nightly]
+        rust: [stable, nightly, 1.45.2]
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -20,5 +20,5 @@ jobs:
       - run: cargo build
       - run: cargo test
       - run: cargo fmt -- --check
-        if: matrix.os != 'windows-latest'
+        if: ${{ matrix.os == 'ubuntu-latest' }}
       - run: cargo clippy
